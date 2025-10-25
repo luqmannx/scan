@@ -1,0 +1,1591 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Privacy & Anonymity Checker — Mobile Optimized</title>
+
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js" defer></script>
+
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --accent: #3b82f6;
+      --accent-dark: #2563eb;
+      --good: #10b981;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      line-height: 1.5;
+      font-size: 16px; /* Base font size for better mobile readability */
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin: 0 0 4px 0;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .tagline {
+      font-size: 0.875rem;
+      color: var(--muted);
+      max-width: 600px;
+    }
+
+    .controls {
+      margin-left: auto;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: var(--accent);
+      color: white;
+      border: 0;
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 44px; /* Better touch targets */
+    }
+
+    button:hover {
+      background: var(--accent-dark);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .cfg {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--border);
+    }
+
+    .cfg:hover {
+      background: var(--bg);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      padding: 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .small {
+      font-size: 0.8125rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .progress {
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .progress > i {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #7c3aed);
+      width: 0;
+      transition: width 0.3s ease;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .row:last-child {
+      border-bottom: none;
+    }
+
+    details {
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    details summary {
+      cursor: pointer;
+      padding: 12px 0;
+      font-weight: 600;
+      list-style: none;
+      position: relative;
+      display: flex;
+      align-items: center;
+      min-height: 44px; /* Better touch targets */
+    }
+
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details summary:after {
+      content: '+';
+      position: absolute;
+      right: 0;
+      font-size: 1.2rem;
+      transition: transform 0.2s;
+    }
+
+    details[open] summary:after {
+      content: '-';
+    }
+
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 16px;
+      border-radius: 8px;
+      overflow: auto;
+      font-size: 0.8125rem;
+      line-height: 1.4;
+      margin-top: 12px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.875rem;
+      transition: border-color 0.2s;
+      min-height: 44px; /* Better touch targets */
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .status-good {
+      color: var(--good);
+    }
+
+    .status-warn {
+      color: var(--warn);
+    }
+
+    .status-bad {
+      color: var(--bad);
+    }
+
+    .score-display {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-direction: column;
+    }
+
+    .score-value {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .history-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-item .time {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .history-item .score {
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    .history-item button {
+      padding: 8px 12px;
+      font-size: 0.75rem;
+    }
+
+    footer {
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Chart container with centered text */
+    .chart-container {
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+
+    .chart-center-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .chart-score {
+      font-size: 1.6rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .chart-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: 20px 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-footer {
+      padding: 0 20px 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .step-guide {
+      margin-top: 20px;
+    }
+
+    .step {
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .step:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+
+    .step-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+    }
+
+    .step-content {
+      margin-left: 36px;
+    }
+
+    .step-content ul {
+      padding-left: 20px;
+      margin-top: 8px;
+    }
+
+    .step-content li {
+      margin-bottom: 4px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .badge-easy {
+      background: var(--good);
+    }
+
+    .badge-medium {
+      background: var(--warn);
+    }
+
+    .badge-hard {
+      background: var(--bad);
+    }
+
+    /* Full page modal styles */
+    .full-page-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      z-index: 2000;
+      overflow-y: auto;
+      padding: 0;
+      margin: 0;
+    }
+
+    .full-page-modal .modal-content {
+      max-width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .full-page-modal .modal-header {
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+      padding: 20px 0;
+      margin-bottom: 20px;
+    }
+
+    .full-page-modal .modal-body {
+      padding: 0;
+    }
+
+    .full-page-modal .modal-footer {
+      position: sticky;
+      bottom: 0;
+      background: var(--bg);
+      z-index: 10;
+      padding: 20px 0;
+      margin-top: 20px;
+    }
+
+    /* Mobile-first responsive design */
+    @media (min-width: 640px) {
+      .wrap {
+        padding: 20px;
+      }
+      
+      .grid {
+        grid-template-columns: 380px 1fr;
+        gap: 20px;
+      }
+      
+      .score-display {
+        flex-direction: row;
+      }
+      
+      .modal-footer {
+        flex-direction: row;
+      }
+      
+      header {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+      
+      .controls {
+        margin-left: auto;
+      }
+      
+      button {
+        flex: none;
+      }
+    }
+
+    @media (max-width: 639px) {
+      .wrap {
+        padding: 12px;
+      }
+      
+      .card {
+        padding: 16px;
+      }
+      
+      .modal-overlay {
+        padding: 10px;
+      }
+      
+      .modal {
+        max-height: 95vh;
+      }
+      
+      .modal-footer {
+        flex-direction: column;
+      }
+      
+      .step-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      
+      .badge {
+        margin-left: 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.25rem;
+      }
+      
+      .card-title {
+        font-size: 1rem;
+      }
+      
+      .chart-container {
+        width: 100px;
+        height: 100px;
+      }
+      
+      .chart-score {
+        font-size: 1.4rem;
+      }
+      
+      .score-value {
+        font-size: 1.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Privacy & Anonymity Checker</h1>
+        <div class="tagline">Client-side checks: IP lookup, fingerprint, canvas/audio hash, WebRTC ICE, DoH DNS lookup, tracker scan.</div>
+      </div>
+
+      <div class="controls">
+        <button id="runBtn">
+          <span id="runBtnText">Run Full Scan</span>
+          <span id="runBtnSpinner" class="loading" style="display: none;"></span>
+        </button>
+        <button id="exportBtn" class="cfg">Export JSON</button>
+        <button id="clearHistory" class="cfg">Clear History</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Left Column -->
+      <div>
+        <div class="card">
+          <div class="score-display">
+            <div class="chart-container">
+              <canvas id="radarChart" width="120" height="120"></canvas>
+              <div class="chart-center-text">
+                <div id="scoreLarge" class="chart-score">—%</div>
+                <div class="chart-label">Score</div>
+              </div>
+            </div>
+            <div style="flex: 1; width: 100%;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <div>
+                  <div class="small">Anonymity Score</div>
+                  <div class="small muted" style="margin-top: 4px;">Last run: <span id="lastRun">never</span></div>
+                </div>
+              </div>
+
+              <div class="progress">
+                <i id="progressBar"></i>
+              </div>
+              <div class="small muted" style="margin-top: 8px;">Scan progress: <span id="progressText">idle</span></div>
+            </div>
+          </div>
+
+          <details open style="margin-top: 16px;">
+            <summary>Quick summary</summary>
+            <div id="quickList" style="margin-top: 12px;"></div>
+          </details>
+        </div>
+
+        <div class="card" style="margin-top: 16px;">
+          <div class="card-title">History</div>
+          <div class="small muted" style="margin-bottom: 12px;">Local-only (browser)</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div class="small muted">Entries: <span id="historyCount">0</span></div>
+          </div>
+          <div id="historyList" style="max-height: 220px; overflow: auto;"></div>
+        </div>
+
+        <div class="card" style="margin-top: 16px;">
+          <div class="card-title">Configuration</div>
+          <div class="small muted" style="margin-bottom: 12px;">Add API tokens to improve IP reputation checks (stored only in your browser localStorage).</div>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div>
+              <label for="ipinfoToken" class="small">IPinfo token (optional)</label>
+              <input id="ipinfoToken" placeholder="Enter IPinfo token" />
+            </div>
+            <div>
+              <label for="ipqsKey" class="small">IPQualityScore key (optional)</label>
+              <input id="ipqsKey" placeholder="Enter IPQualityScore key" />
+            </div>
+            <div class="small muted">[Unverified] I cannot validate your API keys here; they remain local to your browser.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div>
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+              <div class="card-title">Detailed Findings</div>
+              <div class="small muted">Expand sections for details & remediation</div>
+            </div>
+            <div class="small muted">Severity: <span class="status-good">Good</span> / <span class="status-warn">Medium</span> / <span class="status-bad">Critical</span></div>
+          </div>
+
+          <section>
+            <details open>
+              <summary>Connection & IP</summary>
+              <div class="row"><div>Public IP</div><div id="ipVal" class="muted">—</div></div>
+              <div class="row"><div>Geo / ISP</div><div id="geoVal" class="muted">—</div></div>
+              <div class="row"><div>VPN/Proxy Info</div><div id="vpnVal" class="muted">—</div></div>
+            </details>
+
+            <details>
+              <summary>WebRTC Leak Test</summary>
+              <div class="small muted" style="margin-bottom: 12px;">Collects ICE candidates and looks for local/private addresses (requires browser support).</div>
+              <div id="webrtcList"></div>
+            </details>
+
+            <details>
+              <summary>Fingerprinting</summary>
+              <div class="small muted" style="margin-bottom: 12px;">FingerprintJS components + canvas & audio hashes</div>
+              <div class="row"><div>FingerprintJS ID</div><div id="fpId" class="muted">—</div></div>
+              <div class="row"><div>Entropy (approx)</div><div id="fpEntropy" class="muted">—</div></div>
+              <div class="row"><div>Canvas hash</div><div id="canvasHash" class="muted">—</div></div>
+              <div class="row"><div>Audio hash</div><div id="audioHash" class="muted">—</div></div>
+            </details>
+
+            <details>
+              <summary>Tracker / Script Scan</summary>
+              <div class="small muted" style="margin-bottom: 12px;">Scans loaded resources for common tracker domains.</div>
+              <div id="trackerList"></div>
+            </details>
+
+            <details>
+              <summary>DNS Leak (DoH) Test</summary>
+              <div class="small muted" style="margin-bottom: 12px;">Queries public DoH endpoints and compares resolved IPs (indicator, not proof).</div>
+              <div id="dnsList"></div>
+            </details>
+
+            <details>
+              <summary>System Exposure</summary>
+              <div class="row"><div>User agent</div><div id="uaVal" class="muted">—</div></div>
+              <div class="row"><div>Screen</div><div id="screenVal" class="muted">—</div></div>
+              <div class="row"><div>Device memory / Cores</div><div id="sysVal" class="muted">—</div></div>
+              <div class="row"><div>Timezone</div><div id="tzVal" class="muted">—</div></div>
+            </details>
+
+            <details>
+              <summary>Remediation & Quick Fixes</summary>
+              <ul style="margin-top: 12px; padding-left: 20px;">
+                <li>Use a reputable VPN and verify DNS leak tests (Mullvad, ProtonVPN, etc.).</li>
+                <li>Disable WebRTC or use a blocker extension if you need to preserve IP privacy.</li>
+                <li>Use privacy-first browsers (Firefox with hardened settings or Brave).</li>
+                <li>Use extensions like uBlock Origin, Privacy Badger; regularly clear cookies.</li>
+                <li>For maximum anonymity use Tor Browser (trade-offs: speed & site compatibility).</li>
+              </ul>
+            </details>
+          </section>
+        </div>
+
+        <div class="card" style="margin-top: 16px;">
+          <div class="card-title">Raw Data & Developer Output</div>
+          <div class="small muted" style="margin-bottom: 12px;">Useful for debugging. No external storage unless you export.</div>
+          <pre id="rawData">{}</pre>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="small" style="margin-bottom: 8px;">luqman habib</div>
+      <div class="small muted">Disclaimer: If you don't want to be cooked, follow mentioned steps</div>
+    </footer>
+  </div>
+
+  <!-- Score Alert Modal -->
+  <div id="scoreAlertModal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">You cooked! 🍳</div>
+        <div class="small muted">Your anonymity score is below 90%. Would you like to improve it?</div>
+      </div>
+      <div class="modal-body">
+        <p>Your current privacy profile has some weaknesses that could make you more identifiable online.</p>
+      </div>
+      <div class="modal-footer">
+        <button id="letMeCooked" class="cfg">Let me cooked</button>
+        <button id="makeMeAnonymous">Make me anonymous</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full Page Security Guide Modal -->
+  <div id="securityGuideModal" class="full-page-modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Privacy Improvement Guide</div>
+        <div class="small muted">Follow these steps to enhance your online anonymity</div>
+      </div>
+      <div class="modal-body">
+        <div class="step-guide">
+          <div class="step">
+            <div class="step-title">
+              <span class="step-number">1</span>
+              Install a Privacy-Focused Browser
+              <span class="badge badge-easy">Easy</span>
+            </div>
+            <div class="step-content">
+              <p>Switch to a browser designed for privacy:</p>
+              <ul>
+                <li><strong>Firefox</strong> with privacy settings hardened</li>
+                <li><strong>Brave</strong> with shields enabled</li>
+                <li><strong>Tor Browser</strong> for maximum anonymity</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="step">
+            <div class="step-title">
+              <span class="step-number">2</span>
+              Use a Reputable VPN
+              <span class="badge badge-medium">Medium</span>
+            </div>
+            <div class="step-content">
+              <p>Hide your IP address and encrypt your connection:</p>
+              <ul>
+                <li><strong>Mullvad VPN</strong> - No logs, anonymous accounts</li>
+                <li><strong>ProtonVPN</strong> - Swiss-based, strong privacy</li>
+                <li><strong>IVPN</strong> - Independent and transparent</li>
+              </ul>
+              <p class="small muted">Always verify DNS leak protection after setup.</p>
+            </div>
+          </div>
+          
+          <div class="step">
+            <div class="step-title">
+              <span class="step-number">3</span>
+              Install Privacy Extensions
+              <span class="badge badge-easy">Easy</span>
+            </div>
+            <div class="step-content">
+              <p>Essential browser extensions for privacy:</p>
+              <ul>
+                <li><strong>uBlock Origin</strong> - Blocks ads and trackers</li>
+                <li><strong>Privacy Badger</strong> - Blocks invisible trackers</li>
+                <li><strong>HTTPS Everywhere</strong> - Forces secure connections</li>
+                <li><strong>CanvasBlocker</strong> - Prevents canvas fingerprinting</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="step">
+            <div class="step-title">
+              <span class="step-number">4</span>
+              Disable WebRTC
+              <span class="badge badge-medium">Medium</span>
+            </div>
+            <div class="step-content">
+              <p>Prevent WebRTC from leaking your local IP address:</p>
+              <ul>
+                <li><strong>Firefox:</strong> Type <code>about:config</code> in address bar, search for <code>media.peerconnection.enabled</code> and set to <code>false</code></li>
+                <li><strong>Chrome/Brave:</strong> Install WebRTC Leak Prevent extension</li>
+                <li><strong>All browsers:</strong> Use a VPN that blocks WebRTC leaks</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="step">
+            <div class="step-title">
+              <span class="step-number">5</span>
+              Change DNS Providers
+              <span class="badge badge-easy">Easy</span>
+            </div>
+            <div class="step-content">
+              <p>Use privacy-respecting DNS servers:</p>
+              <ul>
+                <li><strong>Cloudflare (1.1.1.1)</strong> - Fast with privacy focus</li>
+                <li><strong>Quad9 (9.9.9.9)</strong> - Blocks malicious domains</li>
+                <li><strong>NextDNS</strong> - Customizable with blocking options</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="step">
+            <div class="step-title">
+              <span class="step-number">6</span>
+              Browser Hardening
+              <span class="badge badge-hard">Advanced</span>
+            </div>
+            <div class="step-content">
+              <p>Advanced browser configuration:</p>
+              <ul>
+                <li>Disable third-party cookies</li>
+                <li>Block fingerprinting techniques</li>
+                <li>Use private browsing mode by default</li>
+                <li>Clear browsing data on exit</li>
+                <li>Disable JavaScript for untrusted sites</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="step">
+            <div class="step-title">
+              <span class="step-number">7</span>
+              System-Level Privacy
+              <span class="badge badge-hard">Advanced</span>
+            </div>
+            <div class="step-content">
+              <p>Operating system and application privacy:</p>
+              <ul>
+                <li>Use a privacy-focused OS like Tails or Qubes</li>
+                <li>Disable telemetry and data collection</li>
+                <li>Use open-source software when possible</li>
+                <li>Encrypt your hard drive</li>
+                <li>Use a separate device for sensitive activities</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="closeGuide" class="cfg">Close Guide</button>
+        <button id="rescanAfterGuide">Run Scan Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // --- Utilities and safe DOM setter ---
+  const el = id => document.getElementById(id) || { textContent: '' };
+  const setText = (id, text) => { const e = document.getElementById(id); if (e) e.textContent = text; };
+  const setHTML = (id, html) => { const e = document.getElementById(id); if (e) e.innerHTML = html; };
+
+  // --- Progress helper ---
+  const setProgress = (n, text) => {
+    const bar = document.getElementById('progressBar');
+    if (bar) bar.style.width = (n || 0) + '%';
+    setText('progressText', text || '');
+  };
+
+  // --- Loading state for scan button ---
+  const setLoadingState = (isLoading) => {
+    const runBtn = document.getElementById('runBtn');
+    const runBtnText = document.getElementById('runBtnText');
+    const runBtnSpinner = document.getElementById('runBtnSpinner');
+    
+    if (runBtn) runBtn.disabled = isLoading;
+    if (runBtnText) runBtnText.textContent = isLoading ? 'Scanning...' : 'Run Full Scan';
+    if (runBtnSpinner) runBtnSpinner.style.display = isLoading ? 'inline-block' : 'none';
+  };
+
+  // --- Show score alert modal ---
+  const showScoreAlert = (score) => {
+    const modal = document.getElementById('scoreAlertModal');
+    if (modal) {
+      modal.style.display = 'flex';
+    }
+  };
+
+  // --- Show security guide modal ---
+  const showSecurityGuide = () => {
+    const modal = document.getElementById('securityGuideModal');
+    if (modal) {
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+  };
+
+  // --- Close modal ---
+  const closeModal = (modalId) => {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.display = 'none';
+      document.body.style.overflow = ''; // Restore scrolling
+    }
+  };
+
+  // --- Chart (doughnut) ---
+  let radarChart = null;
+  function initChart() {
+    const c = document.getElementById('radarChart');
+    if (!c) return;
+    const ctx = c.getContext('2d');
+    radarChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Connection','Fingerprint','Trackers','System','DNS'],
+        datasets: [{
+          data: [20,20,20,20,20],
+          backgroundColor: ['#60a5fa','#a78bfa','#34d399','#fbbf24','#f472b6'],
+          hoverOffset: 4,
+          borderWidth: 0
+        }]
+      },
+      options: { 
+        cutout: '70%', 
+        plugins: { 
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.label}: ${context.parsed}%`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // --- Local history functions ---
+  function loadHistory() {
+    let h = [];
+    try { h = JSON.parse(localStorage.getItem('pa_history') || '[]'); } catch(e) { h = []; }
+    setText('historyCount', (h && h.length) || 0);
+    const box = document.getElementById('historyList');
+    if (!box) return;
+    box.innerHTML = '';
+    
+    if (h.length === 0) {
+      box.innerHTML = '<div class="muted small" style="text-align: center; padding: 20px;">No scan history yet</div>';
+      return;
+    }
+    
+    (h || []).slice().reverse().forEach((entry, i) => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'history-item';
+      const idx = (h.length - 1 - i);
+      wrapper.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="time">${new Date(entry.time).toLocaleString()}</div>
+            <div class="score">Score: ${entry.score}%</div>
+          </div>
+          <div><button data-idx='${idx}' class="cfg">Load</button></div>
+        </div>
+      `;
+      box.appendChild(wrapper);
+    });
+    
+    box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      const idx = b.getAttribute('data-idx'); 
+      loadFromHistory(parseInt(idx, 10));
+    }));
+  }
+  
+  function saveToHistory(obj) {
+    try {
+      const h = JSON.parse(localStorage.getItem('pa_history') || '[]');
+      h.push(obj);
+      localStorage.setItem('pa_history', JSON.stringify(h));
+      loadHistory();
+    } catch(e){ console.warn('history save',e); }
+  }
+  
+  function clearHistory() { 
+    if (confirm('Are you sure you want to clear all scan history?')) {
+      localStorage.removeItem('pa_history'); 
+      loadHistory(); 
+    }
+  }
+  
+  function loadFromHistory(idx) {
+    try {
+      const h = JSON.parse(localStorage.getItem('pa_history') || '[]');
+      if (h[idx]) {
+        displayResults(h[idx]);
+      }
+    } catch(e) { console.warn('history load', e); }
+  }
+
+  // --- Display results from history ---
+  function displayResults(result) {
+    setText('scoreLarge', result.score + '%');
+    setText('lastRun', new Date(result.time).toLocaleString());
+    document.getElementById('rawData').textContent = JSON.stringify(result, null, 2);
+    
+    // Update IP section
+    if (result.details.ip) {
+      setText('ipVal', result.details.ip.publicIp || 'unknown');
+      const geoLabel = (result.details.ip.geo.city ? result.details.ip.geo.city + ', ' : '') + 
+                      (result.details.ip.geo.region ? result.details.ip.geo.region + ', ' : '') + 
+                      (result.details.ip.geo.country_name || result.details.ip.geo.country || '—');
+      setText('geoVal', geoLabel);
+      setText('vpnVal', result.details.ip.geo.org || '—');
+    }
+    
+    // Update fingerprint section
+    if (result.details.fingerprint) {
+      setText('fpId', result.details.fingerprint.id || '—');
+      setText('fpEntropy', (result.details.fingerprint.entropyApprox !== null) ? 
+        (result.details.fingerprint.entropyApprox + ' (approx)') : '—');
+    }
+    
+    // Update canvas and audio
+    if (result.details.canvas) {
+      setText('canvasHash', result.details.canvas.hash ? 
+        (result.details.canvas.hash.slice(0, 16) + '...') : 'n/a');
+    }
+    
+    if (result.details.audio) {
+      setText('audioHash', result.details.audio.hash ? 
+        (result.details.audio.hash.slice(0, 16) + '...') : 'n/a');
+    }
+    
+    // Update WebRTC
+    const webrtcListEl = document.getElementById('webrtcList');
+    if (webrtcListEl && result.details.webrtc) {
+      webrtcListEl.innerHTML = '';
+      if (result.details.webrtc.localIPs && result.details.webrtc.localIPs.length) {
+        result.details.webrtc.localIPs.forEach(ip => { 
+          const d = document.createElement('div'); 
+          d.textContent = ip; 
+          d.className = 'muted'; 
+          webrtcListEl.appendChild(d); 
+        });
+      } else {
+        webrtcListEl.textContent = result.details.webrtc.note || 'No local addresses found in ICE candidates';
+      }
+    }
+    
+    // Update trackers
+    const trackerBox = document.getElementById('trackerList');
+    if (trackerBox && result.details.trackers) {
+      trackerBox.innerHTML = '';
+      if (result.details.trackers && result.details.trackers.length) {
+        result.details.trackers.forEach(t => { 
+          const d = document.createElement('div'); 
+          d.textContent = t; 
+          d.className = 'muted'; 
+          trackerBox.appendChild(d); 
+        });
+      } else {
+        trackerBox.textContent = 'No common trackers detected in loaded resources';
+      }
+    }
+    
+    // Update DNS
+    const dnsBox = document.getElementById('dnsList');
+    if (dnsBox && result.details.dns) {
+      dnsBox.innerHTML = '';
+      Object.keys(result.details.dns).forEach(k => {
+        const item = result.details.dns[k];
+        const div = document.createElement('div');
+        if (item.error) div.textContent = `${k}: error (${item.error})`;
+        else div.textContent = `${k}: ${Array.isArray(item.ips) && item.ips.length ? item.ips.join(', ') : 'no IPs in response'}`;
+        div.className = 'muted';
+        dnsBox.appendChild(div);
+      });
+    }
+    
+    // Update system info
+    if (result.details.system) {
+      setText('uaVal', result.details.system.ua || '—');
+      setText('screenVal', result.details.system.screen || '—');
+      setText('sysVal', ((result.details.system.memory ? (result.details.system.memory + ' GB ') : '') + 
+        (result.details.system.cores ? (result.details.system.cores + ' cores') : '') || '—'));
+      setText('tzVal', result.details.system.timezone || '—');
+    }
+    
+    // Update quick summary
+    const quick = document.getElementById('quickList');
+    if (quick) {
+      quick.innerHTML = '';
+      const add = (label, status) => {
+        const d = document.createElement('div');
+        d.style.display = 'flex'; 
+        d.style.justifyContent = 'space-between'; 
+        d.style.padding = '8px 0';
+        d.style.borderBottom = '1px solid var(--border)';
+        
+        const left = document.createElement('div'); 
+        left.textContent = label;
+        left.className = 'small';
+        
+        const right = document.createElement('div'); 
+        right.textContent = status;
+        right.className = 'small';
+        
+        d.appendChild(left); 
+        d.appendChild(right);
+        quick.appendChild(d);
+      };
+      
+      add('Public IP', result.details.ip.publicIp || 'unknown');
+      add('Fingerprint entropy', (result.details.fingerprint && result.details.fingerprint.entropyApprox) ? 
+        (result.details.fingerprint.entropyApprox + ' (approx)') : '—');
+      add('Trackers found', (result.details.trackers ? result.details.trackers.length : 0));
+      add('WebRTC leak', (result.details.webrtc && result.details.webrtc.localIPs && result.details.webrtc.localIPs.length) ? 'yes' : 'no');
+    }
+    
+    // Update radar chart
+    if (radarChart) {
+      radarChart.data.datasets[0].data = [
+        Math.max(0, 20 - (result.details.ip && result.details.ip.geo && result.details.ip.geo.org ? 0 : 5)),
+        Math.max(0, 20 - ((result.details.fingerprint && result.details.fingerprint.entropyApprox && result.details.fingerprint.entropyApprox > 60) ? 0 : 6)),
+        Math.max(0, 20 - ((result.details.trackers && result.details.trackers.length) ? 8 : 0)),
+        Math.max(0, 20 - ((result.details.system && (result.details.system.memory || result.details.system.cores)) ? 6 : 0)),
+        Math.max(0, 20 - ((result.details.dns && Object.keys(result.details.dns || {}).length) ? 6 : 0))
+      ];
+      radarChart.update();
+    }
+  }
+
+  // --- Hash helper using SubtleCrypto ---
+  async function sha256Hex(input) {
+    try {
+      const data = (typeof input === 'string') ? new TextEncoder().encode(input) : input;
+      const digest = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch(e) { return null; }
+  }
+
+  // --- IP + Geo (with fallbacks) ---
+  async function getIpAndGeo() {
+    let publicIp = null, geo = {};
+    try {
+      // Try ipify
+      const r = await fetch('https://api.ipify.org?format=json');
+      if (r.ok) { const j = await r.json(); publicIp = j.ip; }
+    } catch(e){ /* ignore */ }
+
+    try {
+      if (publicIp) {
+        // primary geo: ipapi
+        const r2 = await fetch(`https://ipapi.co/${publicIp}/json/`);
+        if (r2.ok) geo = await r2.json();
+      } else {
+        // fallback to ipinfo (no token)
+        const r3 = await fetch('https://ipinfo.io/json');
+        if (r3.ok) { geo = await r3.json(); publicIp = geo.ip || publicIp; }
+      }
+    } catch(e){ /* ignore */ }
+
+    return { publicIp: publicIp || 'unknown', geo: geo || {} };
+  }
+
+  // --- Fingerprint (FingerprintJS open-source) ---
+  async function runFingerprint() {
+    const out = { id: null, entropyApprox: null, componentsCount: 0 };
+    try {
+      if (!window.FingerprintJS) return out;
+      const fp = await FingerprintJS.load();
+      const res = await fp.get();
+      out.id = res && res.visitorId ? res.visitorId : null;
+      out.componentsCount = res && res.components ? Object.keys(res.components).length : 0;
+      // Approx entropy (very rough): components * 6 (cap at 100)
+      out.entropyApprox = Math.min(100, Math.round(out.componentsCount * 6));
+    } catch(e) { console.warn('fingerprint error', e); }
+    return out;
+  }
+
+  // --- Canvas fingerprint hash ---
+  async function canvasHash() {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 220; canvas.height = 60;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return null;
+      ctx.fillStyle = '#f60'; ctx.fillRect(0, 0, 220, 60);
+      ctx.textBaseline = 'alphabetic'; ctx.font = '16px Arial'; ctx.fillStyle = '#069';
+      ctx.fillText('PrivacyCheck', 10, 24);
+      const dataUrl = canvas.toDataURL();
+      const hash = await sha256Hex(dataUrl);
+      return hash;
+    } catch(e) { console.warn('canvas', e); return null; }
+  }
+
+  // --- Audio fingerprint using OfflineAudioContext (no audible output) ---
+  async function audioHash() {
+    try {
+      const ctx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 44100, 44100);
+      const osc = ctx.createOscillator();
+      const filter = ctx.createBiquadFilter();
+      osc.type = 'sine'; osc.frequency.value = 440;
+      filter.type = 'lowpass'; filter.frequency.value = 1000;
+      osc.connect(filter); filter.connect(ctx.destination);
+      osc.start(0);
+      osc.stop(0.5);
+      const buffer = await ctx.startRendering();
+      // get channel data and hash
+      const channel = buffer.getChannelData(0);
+      // convert float32 to uint8 for hashing
+      const u8 = new Uint8Array(channel.length * 4);
+      const view = new DataView(u8.buffer);
+      for (let i = 0; i < channel.length; i++) view.setFloat32(i * 4, channel[i], true);
+      const hash = await sha256Hex(u8);
+      return hash;
+    } catch(e) { console.warn('audio failed', e); return null; }
+  }
+
+  // --- WebRTC ICE candidate collection ---
+  async function checkWebrtcCandidates(timeoutMs = 1500) {
+    const result = { candidates: [], localIPs: [], leak: false, note: null };
+    try {
+      const RTCPeer = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
+      if (!RTCPeer) { result.note = 'RTCPeerConnection not supported'; return result; }
+      const pc = new RTCPeer({ iceServers: [] });
+      const candidates = [];
+      pc.onicecandidate = (ev) => {
+        try {
+          if (ev.candidate && ev.candidate.candidate) candidates.push(ev.candidate.candidate);
+        } catch(e){ /* ignore */ }
+      };
+      // create data channel to trigger gathering
+      try { pc.createDataChannel('d'); } catch(e){ /* ignore */ }
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      // wait for ICE gathering or timeout
+      await new Promise(resolve => {
+        const max = setTimeout(() => resolve(), timeoutMs);
+        pc.onicegatheringstatechange = () => {
+          if (pc.iceGatheringState === 'complete') { clearTimeout(max); resolve(); }
+        };
+      });
+      pc.close();
+      result.candidates = candidates;
+      // extract IPv4 addresses
+      const ips = new Set();
+      for (const c of candidates) {
+        const m = c.match(/((?:25[0-5]|2[0-4]\d|[01]?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|[01]?\d?\d)){3})/);
+        if (m && m[1]) ips.add(m[1]);
+      }
+      result.localIPs = Array.from(ips);
+      result.leak = result.localIPs.length > 0;
+    } catch(e) { console.warn('webrtc error', e); result.note = 'error'; }
+    return result;
+  }
+
+  // --- Tracker/resource scan via performance entries ---
+  function scanTrackers() {
+    const res = [];
+    try {
+      const entries = (performance && performance.getEntriesByType) ? (performance.getEntriesByType('resource') || []) : [];
+      const trackers = ['google-analytics.com','googletagmanager.com','googlesyndication.com','facebook.net','connect.facebook.net','pixel.facebook.com','analytics.twitter.com','analytics.tiktok.com','doubleclick.net','ads.twitter.com'];
+      entries.forEach(r => {
+        trackers.forEach(t => { if (r.name && r.name.includes(t) && !res.includes(t)) res.push(t); });
+      });
+    } catch(e){ console.warn('trackers', e); }
+    return res;
+  }
+
+  // --- DNS (DoH) lookups (indicators) ---
+  async function dohLookup(name = 'example.com') {
+    const results = {};
+    const endpoints = [
+      { name: 'Google', url: `https://dns.google/resolve?name=${encodeURIComponent(name)}&type=A` },
+      { name: 'Cloudflare', url: `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(name)}&type=A&ct=application/dns-json` }
+    ];
+    for (const e of endpoints) {
+      try {
+        const r = await fetch(e.url);
+        if (!r.ok) { results[e.name] = { error: `HTTP ${r.status}` }; continue; }
+        const j = await r.json();
+        let ips = [];
+        if (j && j.Answer && Array.isArray(j.Answer)) ips = j.Answer.map(a => a.data || a.rdata).filter(Boolean);
+        if (j && j.Answers && Array.isArray(j.Answers)) ips = ips.concat(j.Answers.map(a => a.data || a.rdata).filter(Boolean));
+        if (j && j.Answer === undefined && j.Answers === undefined && j.Answer === undefined && j['Answer']) ips = ips;
+        results[e.name] = { ips: ips };
+      } catch(err) {
+        results[e.name] = { error: err.message || 'fetch error' };
+      }
+    }
+    return results;
+  }
+
+  // --- Main orchestrator ---
+  async function runFullScan() {
+    try {
+      setLoadingState(true);
+      setProgress(3, 'starting');
+      setText('quickList', '');
+      setText('rawData', '{}');
+
+      // result object
+      const result = { time: Date.now(), score: 100, details: {} };
+
+      // 1: IP & geo
+      setProgress(8, 'fetching IP & geo');
+      const ipgeo = await getIpAndGeo();
+      result.details.ip = ipgeo;
+      setText('ipVal', ipgeo.publicIp || 'unknown');
+      const geoLabel = (ipgeo.geo.city ? ipgeo.geo.city + ', ' : '') + (ipgeo.geo.region ? ipgeo.geo.region + ', ' : '') + (ipgeo.geo.country_name || ipgeo.geo.country || '—');
+      setText('geoVal', geoLabel);
+      setText('vpnVal', ipgeo.geo.org || ipgeo.geo.org || '—');
+
+      // 2: fingerprint
+      setProgress(20, 'fingerprinting (FingerprintJS)');
+      const fp = await runFingerprint();
+      setText('fpId', fp.id || '—');
+      setText('fpEntropy', (fp.entropyApprox !== null) ? (fp.entropyApprox + ' (approx)') : '—');
+      result.details.fingerprint = fp;
+      // scoring based on rough entropy approximation
+      if (fp.entropyApprox === null) { result.score -= 6; } else if (fp.entropyApprox < 35) { result.score -= 18; } else if (fp.entropyApprox < 60) { result.score -= 8; }
+
+      // 3: canvas
+      setProgress(36, 'canvas fingerprinting');
+      const ch = await canvasHash();
+      setText('canvasHash', ch ? (ch.slice(0, 16) + '...') : 'n/a');
+      result.details.canvas = { hash: ch };
+      if (ch) result.score -= 10;
+
+      // 4: audio
+      setProgress(46, 'audio fingerprint (offline)');
+      const ah = await audioHash();
+      setText('audioHash', ah ? (ah.slice(0, 16) + '...') : 'n/a');
+      result.details.audio = { hash: ah };
+      if (ah) result.score -= 6;
+
+      // 5: WebRTC
+      setProgress(58, 'gathering WebRTC candidates');
+      const webrtc = await checkWebrtcCandidates(1600);
+      const webrtcListEl = document.getElementById('webrtcList');
+      if (webrtcListEl) {
+        webrtcListEl.innerHTML = '';
+        if (webrtc.localIPs && webrtc.localIPs.length) {
+          webrtc.localIPs.forEach(ip => { const d = document.createElement('div'); d.textContent = ip; d.className = 'muted'; webrtcListEl.appendChild(d); });
+        } else {
+          webrtcListEl.textContent = webrtc.note || 'No local addresses found in ICE candidates';
+        }
+      }
+      result.details.webrtc = webrtc;
+      if (webrtc.localIPs && webrtc.localIPs.length) result.score -= 12;
+
+      // 6: trackers
+      setProgress(72, 'scanning resources for trackers');
+      const trackers = scanTrackers();
+      const trackerBox = document.getElementById('trackerList');
+      if (trackerBox) trackerBox.innerHTML = '';
+      if (trackers && trackers.length) {
+        trackers.forEach(t => { const d = document.createElement('div'); d.textContent = t; d.className = 'muted'; if (trackerBox) trackerBox.appendChild(d); });
+        result.score -= 8;
+      } else if (trackerBox) trackerBox.textContent = 'No common trackers detected in loaded resources';
+      result.details.trackers = trackers;
+
+      // 7: DNS DoH checks
+      setProgress(84, 'DoH DNS lookup');
+      const doh = await dohLookup('example.com');
+      result.details.dns = doh;
+      const dnsBox = document.getElementById('dnsList');
+      if (dnsBox) {
+        dnsBox.innerHTML = '';
+        Object.keys(doh).forEach(k => {
+          const item = doh[k];
+          const div = document.createElement('div');
+          if (item.error) div.textContent = `${k}: error (${item.error})`;
+          else div.textContent = `${k}: ${Array.isArray(item.ips) && item.ips.length ? item.ips.join(', ') : 'no IPs in response'}`;
+          div.className = 'muted';
+          dnsBox.appendChild(div);
+        });
+        // [Unverified] simplistic DNS leak indicator: if any DoH response returns our public IP, mark as possible leak
+        try {
+          const pub = result.details.ip && result.details.ip.publicIp;
+          let leak = false;
+          Object.values(doh).forEach(v => { if (v && Array.isArray(v.ips) && v.ips.includes(pub)) leak = true; });
+          if (leak) { result.score -= 12; const note = document.createElement('div'); note.textContent = 'Possible DNS leak detected (indicator)'; note.className = 'muted'; dnsBox.appendChild(note); }
+        } catch(e) { /* ignore */ }
+      }
+
+      // 8: system exposure
+      setProgress(92, 'collecting system info');
+      try {
+        const ua = navigator.userAgent || '—';
+        setText('uaVal', ua);
+        setText('screenVal', (screen && screen.width ? (screen.width + 'x' + screen.height) : '—'));
+        const mem = navigator.deviceMemory || null;
+        const cores = navigator.hardwareConcurrency || null;
+        setText('sysVal', ((mem ? (mem + ' GB ') : '') + (cores ? (cores + ' cores') : '') || '—'));
+        setText('tzVal', (Intl.DateTimeFormat().resolvedOptions && Intl.DateTimeFormat().resolvedOptions().timeZone) || '—');
+        result.details.system = { ua, screen: (screen && screen.width ? (screen.width + 'x' + screen.height) : '—'), memory: mem, cores: cores, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '—' };
+        if (mem) result.score -= 4;
+        if (cores) result.score -= 4;
+      } catch(e) { console.warn('system info', e); }
+
+      // finalize
+      setProgress(98, 'finalizing');
+      result.score = Math.max(0, Math.min(100, Math.round(result.score)));
+      setText('scoreLarge', result.score + '%');
+      setText('lastRun', new Date(result.time).toLocaleString());
+      document.getElementById('rawData').textContent = JSON.stringify(result, null, 2);
+
+      // quick summary display
+      const quick = document.getElementById('quickList');
+      if (quick) {
+        quick.innerHTML = '';
+        const add = (label, status) => {
+          const d = document.createElement('div');
+          d.style.display = 'flex'; d.style.justifyContent = 'space-between'; d.style.padding = '8px 0';
+          d.style.borderBottom = '1px solid var(--border)';
+          const left = document.createElement('div'); left.textContent = label; left.className = 'small';
+          const right = document.createElement('div'); right.textContent = status; right.className = 'small';
+          d.appendChild(left); d.appendChild(right);
+          quick.appendChild(d);
+        };
+        add('Public IP', result.details.ip.publicIp || 'unknown');
+        add('Fingerprint entropy', (result.details.fingerprint && result.details.fingerprint.entropyApprox) ? (result.details.fingerprint.entropyApprox + ' (approx)') : '—');
+        add('Trackers found', (result.details.trackers ? result.details.trackers.length : 0));
+        add('WebRTC leak', (result.details.webrtc && result.details.webrtc.localIPs && result.details.webrtc.localIPs.length) ? 'yes' : 'no');
+      }
+
+      // update radar chart
+      if (radarChart) {
+        radarChart.data.datasets[0].data = [
+          Math.max(0, 20 - (result.details.ip && result.details.ip.geo && result.details.ip.geo.org ? 0 : 5)),
+          Math.max(0, 20 - ((result.details.fingerprint && result.details.fingerprint.entropyApprox && result.details.fingerprint.entropyApprox > 60) ? 0 : 6)),
+          Math.max(0, 20 - ((result.details.trackers && result.details.trackers.length) ? 8 : 0)),
+          Math.max(0, 20 - ((result.details.system && (result.details.system.memory || result.details.system.cores)) ? 6 : 0)),
+          Math.max(0, 20 - ((result.details.dns && Object.keys(result.details.dns || {}).length) ? 6 : 0))
+        ];
+        radarChart.update();
+      }
+
+      saveToHistory(result);
+      setProgress(100, 'done');
+      setLoadingState(false);
+
+      // Show alert if score is below 90
+      if (result.score < 90) {
+        setTimeout(() => {
+          showScoreAlert(result.score);
+        }, 500);
+      }
+    } catch (err) {
+      console.error('scan failed', err);
+      setProgress(0, 'failed');
+      setText('rawData', JSON.stringify({ error: err.message || String(err) }, null, 2));
+      setLoadingState(false);
+    }
+  }
+
+  // --- Load / wire UI ---
+  window.addEventListener('DOMContentLoaded', () => {
+    initChart();
+    loadHistory();
+    const runBtn = document.getElementById('runBtn');
+    if (runBtn) runBtn.addEventListener('click', () => { runFullScan(); });
+
+    const exportBtn = document.getElementById('exportBtn');
+    if (exportBtn) exportBtn.addEventListener('click', () => {
+      try {
+        const data = document.getElementById('rawData').textContent || '{}';
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'pa_scan_' + Date.now() + '.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch(e) { console.warn('export', e); }
+    });
+
+    const clearBtn = document.getElementById('clearHistory');
+    if (clearBtn) clearBtn.addEventListener('click', () => { clearHistory(); });
+
+    // Modal event handlers
+    const letMeCookedBtn = document.getElementById('letMeCooked');
+    if (letMeCookedBtn) {
+      letMeCookedBtn.addEventListener('click', () => {
+        closeModal('scoreAlertModal');
+      });
+    }
+
+    const makeMeAnonymousBtn = document.getElementById('makeMeAnonymous');
+    if (makeMeAnonymousBtn) {
+      makeMeAnonymousBtn.addEventListener('click', () => {
+        closeModal('scoreAlertModal');
+        showSecurityGuide();
+      });
+    }
+
+    const closeGuideBtn = document.getElementById('closeGuide');
+    if (closeGuideBtn) {
+      closeGuideBtn.addEventListener('click', () => {
+        closeModal('securityGuideModal');
+      });
+    }
+
+    const rescanAfterGuideBtn = document.getElementById('rescanAfterGuide');
+    if (rescanAfterGuideBtn) {
+      rescanAfterGuideBtn.addEventListener('click', () => {
+        closeModal('securityGuideModal');
+        runFullScan();
+      });
+    }
+
+    // Close modals when clicking outside
+    document.addEventListener('click', (e) => {
+      if (e.target.id === 'scoreAlertModal') {
+        closeModal('scoreAlertModal');
+      }
+    });
+
+    // Load saved config tokens if present
+    try {
+      const t = localStorage.getItem('pa_ipinfo_token'); if (t) document.getElementById('ipinfoToken').value = t;
+      const k = localStorage.getItem('pa_ipqs_key'); if (k) document.getElementById('ipqsKey').value = k;
+    } catch(e) { /* ignore */ }
+    
+    // Save tokens when they change
+    const ipinfoToken = document.getElementById('ipinfoToken');
+    const ipqsKey = document.getElementById('ipqsKey');
+    
+    if (ipinfoToken) {
+      ipinfoToken.addEventListener('change', () => {
+        try {
+          localStorage.setItem('pa_ipinfo_token', ipinfoToken.value);
+        } catch(e) { /* ignore */ }
+      });
+    }
+    
+    if (ipqsKey) {
+      ipqsKey.addEventListener('change', () => {
+        try {
+          localStorage.setItem('pa_ipqs_key', ipqsKey.value);
+        } catch(e) { /* ignore */ }
+      });
+    }
+  });
+  </script>
+</body>
+</html>

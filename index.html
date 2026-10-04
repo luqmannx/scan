@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <meta name="color-scheme" content="dark light">
-<meta name="description" content="A client-side privacy audit — every signal your browser exposes.">
+<meta name="description" content="A client-side privacy audit — every signal your browser will hand over, and the ones it protects.">
 <title>Are you anonymous?</title>
 
 <script>
@@ -48,8 +48,8 @@
   --btn-primary-bg-hover:#f2f2f7; --btn-primary-border-hover:#f2f2f7;
   --btn-shadow:rgba(255,255,255,.10); --btn-shadow-hover:rgba(255,255,255,.16);
   --body-glow-1:rgba(110,132,255,.10); --body-glow-2:rgba(255,255,255,.03); --body-base:#000;
-  --ok:#30d158; --warn:#ffd60a; --err:#ff453a;
-  --ok-bg:rgba(48,209,88,.14); --warn-bg:rgba(255,214,10,.14); --err-bg:rgba(255,69,58,.14);
+  --ok:#30d158; --warn:#ffd60a; --err:#ff453a; --info:#0a84ff;
+  --ok-bg:rgba(48,209,88,.14); --warn-bg:rgba(255,214,10,.14); --err-bg:rgba(255,69,58,.14); --info-bg:rgba(10,132,255,.14);
 }
 html[data-theme="light"]{
   --text:#1d1d1f; --text-2:rgba(29,29,31,.72); --text-3:rgba(29,29,31,.55); --text-4:rgba(29,29,31,.36);
@@ -67,8 +67,8 @@ html[data-theme="light"]{
   --btn-primary-bg-hover:#2d2d2f; --btn-primary-border-hover:#2d2d2f;
   --btn-shadow:rgba(0,0,0,.08); --btn-shadow-hover:rgba(0,0,0,.14);
   --body-glow-1:rgba(110,132,255,.12); --body-glow-2:rgba(0,0,0,.02); --body-base:#fbfbfd;
-  --ok:#248a3d; --warn:#b25e00; --err:#d70015;
-  --ok-bg:rgba(36,138,61,.12); --warn-bg:rgba(178,94,0,.12); --err-bg:rgba(215,0,21,.10);
+  --ok:#248a3d; --warn:#b25e00; --err:#d70015; --info:#0066cc;
+  --ok-bg:rgba(36,138,61,.12); --warn-bg:rgba(178,94,0,.12); --err-bg:rgba(215,0,21,.10); --info-bg:rgba(0,102,204,.12);
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -96,15 +96,13 @@ svg{display:block}
   z-index:2; pointer-events:none; background:transparent; display:block !important;
 }
 
-/* ═══════ NAV ═══════ */
 nav{
   position:fixed; inset:0 0 auto 0; z-index:100; height:var(--nav-h);
   display:flex; align-items:center; justify-content:space-between; gap:16px;
   padding-left:max(20px,env(safe-area-inset-left));
   padding-right:max(20px,env(safe-area-inset-right));
   background:var(--nav-bg);
-  -webkit-backdrop-filter:saturate(180%) blur(20px);
-  backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px); backdrop-filter:saturate(180%) blur(20px);
   border-bottom:1px solid var(--nav-line);
 }
 .logo{ display:block; font-size:17px; font-weight:600; letter-spacing:-.03em; line-height:1.1; color:var(--text); flex-shrink:0; }
@@ -113,8 +111,7 @@ nav{
 .nav-links{ display:flex; align-items:center; gap:26px; }
 .nav-links button{
   position:relative; padding:8px 0; font-size:13px; font-weight:500;
-  letter-spacing:-.01em; color:var(--text-3);
-  transition:color .5s var(--ease); white-space:nowrap;
+  letter-spacing:-.01em; color:var(--text-3); transition:color .5s var(--ease); white-space:nowrap;
 }
 .nav-links button::after{
   content:""; position:absolute; left:0; bottom:2px; width:0; height:1.5px;
@@ -137,7 +134,6 @@ nav{
 html[data-theme="dark"] .theme-toggle .icon-sun{ opacity:1; transform:rotate(0deg) scale(1); }
 html[data-theme="dark"] .theme-toggle .icon-moon{ opacity:0; transform:rotate(90deg) scale(.5); }
 
-/* ═══════ HERO ═══════ */
 #hero{
   position:relative; z-index:10; flex:1;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -147,8 +143,7 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ opacity:0; transform:rotate(90
   font-family:var(--font-display);
   font-size:clamp(2.75rem,8.5vw,5rem);
   font-weight:700; line-height:1.0; letter-spacing:-.038em;
-  text-wrap:balance; color:var(--text);
-  animation:rise .7s var(--ease) both;
+  text-wrap:balance; color:var(--text); animation:rise .7s var(--ease) both;
 }
 .hero-title em{
   font-style:normal;
@@ -159,8 +154,7 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ opacity:0; transform:rotate(90
 .hero-sub{
   max-width:620px; margin-top:22px;
   font-size:clamp(15px,1.15vw,17px); line-height:1.55; letter-spacing:-.012em;
-  color:var(--text-3); text-wrap:pretty;
-  animation:rise .7s .1s var(--ease) both;
+  color:var(--text-3); text-wrap:pretty; animation:rise .7s .1s var(--ease) both;
 }
 .cta{ display:flex; align-items:center; justify-content:center; gap:12px; margin-top:40px; animation:rise .7s .16s var(--ease) both; }
 .btn{
@@ -180,7 +174,6 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ opacity:0; transform:rotate(90
 .btn-ghost:hover{ background:var(--surface-hi); border-color:var(--border-hi); color:var(--text); }
 @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 
-/* ═══════ MODAL SHELL ═══════ */
 .modal-backdrop,.info-backdrop{
   position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
   padding:20px; background:var(--backdrop);
@@ -221,7 +214,6 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ opacity:0; transform:rotate(90
 
 .modal-body{ padding:20px 22px calc(24px + env(safe-area-inset-bottom)); overflow-y:auto; overscroll-behavior:contain; }
 
-/* ═══════ SCAN RUNNING ═══════ */
 .scan-stage{ display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:54px 16px 60px; }
 .scan-orb{ position:relative; width:86px;height:86px; margin-bottom:28px; }
 .scan-orb i{ position:absolute; inset:0; border-radius:50%; border:1.5px solid var(--border); }
@@ -237,7 +229,6 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ opacity:0; transform:rotate(90
 .track i{ display:block; height:100%; width:0%; border-radius:var(--r-pill); background:linear-gradient(90deg,var(--bar-from),var(--bar-to)); transition:width .35s var(--ease); }
 .status{ margin-top:11px; font-size:11.5px; letter-spacing:.01em; color:var(--text-4); min-height:16px; }
 
-/* ═══════ SCAN RESULTS ═══════ */
 #scanResults[hidden]{display:none}
 
 .score-hero{
@@ -254,14 +245,12 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ opacity:0; transform:rotate(90
 .score-meta{ flex:1; min-width:240px; display:flex; flex-direction:column; justify-content:center; }
 .score-verdict{ font-family:var(--font-display); font-size:26px; font-weight:700; letter-spacing:-.034em; line-height:1.15; color:var(--text); }
 .score-sub{ margin-top:8px; max-width:560px; font-size:13.5px; line-height:1.55; color:var(--text-3); }
-
 .score-stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; margin-top:20px; width:100%; }
 .stat{ padding:12px 14px; border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface); }
 .stat .stat-num{ font-family:var(--font-display); font-size:20px; font-weight:700; letter-spacing:-.032em; line-height:1; color:var(--text); font-variant-numeric:tabular-nums; }
 .stat .stat-lbl{ margin-top:4px; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text-4); }
 .stat.danger{ border-color:var(--err); background:var(--err-bg); }
 .stat.danger .stat-num{ color:var(--err); }
-
 .score-actions{ display:flex; gap:9px; margin-top:22px; flex-wrap:wrap; }
 .btn-sm{
   height:38px; padding:0 18px; border-radius:var(--r-pill);
@@ -285,12 +274,11 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ opacity:0; transform:rotate(90
 .critical-banner.is-on{display:flex}
 .critical-banner svg{flex-shrink:0}
 
-/* Findings */
 .findings{ display:grid; gap:9px; }
 .finding{ border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface); overflow:hidden; transition:border-color .22s var(--ease),background .22s var(--ease); }
 .finding[open]{ border-color:var(--border-hi); }
 .finding.danger{ border-color:var(--err); }
-.finding.danger[open]{ border-color:var(--err); background:var(--err-bg); }
+.finding.info{ border-color:var(--info); background:var(--info-bg); }
 .finding > summary{
   display:flex; align-items:center; gap:12px; padding:15px 17px; cursor:pointer; list-style:none;
   font-size:13.5px; font-weight:600; letter-spacing:-.012em; color:var(--text);
@@ -302,6 +290,7 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ opacity:0; transform:rotate(90
 .f-dot.good{background:var(--ok);box-shadow:0 0 0 4px var(--ok-bg)}
 .f-dot.warn{background:var(--warn);box-shadow:0 0 0 4px var(--warn-bg)}
 .f-dot.bad{background:var(--err);box-shadow:0 0 0 4px var(--err-bg)}
+.f-dot.info{background:var(--info);box-shadow:0 0 0 4px var(--info-bg)}
 .f-name{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .f-status{
   font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
@@ -311,6 +300,7 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ opacity:0; transform:rotate(90
 .f-status.good{color:var(--ok);background:var(--ok-bg)}
 .f-status.warn{color:var(--warn);background:var(--warn-bg)}
 .f-status.bad{color:var(--err);background:var(--err-bg)}
+.f-status.info{color:var(--info);background:var(--info-bg)}
 .f-chev{ flex-shrink:0; color:var(--text-4); transition:transform .28s var(--ease),color .22s var(--ease); }
 .finding[open] .f-chev{transform:rotate(180deg);color:var(--text-2)}
 .f-body{ padding:4px 17px 17px; border-top:1px solid var(--border); }
@@ -323,17 +313,19 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ opacity:0; transform:rotate(90
 .kv .v.bad{color:var(--err)}
 .kv .v.good{color:var(--ok)}
 .kv .v.warn{color:var(--warn)}
+.kv .v.info{color:var(--info)}
 
 .f-note{ margin-top:12px; padding:10px 13px; border-radius:var(--r-sm); background:var(--chip-bg); font-size:11.5px; line-height:1.55; color:var(--text-3); }
 .f-note.critical{background:var(--err-bg);color:var(--err)}
 .f-note.good{background:var(--ok-bg);color:var(--ok)}
+.f-note.info{background:var(--info-bg);color:var(--info)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .chip{ font-family:var(--font-mono); font-size:11px; padding:4px 10px; border-radius:999px; background:var(--chip-bg); color:var(--text-3); }
 .chip.bad{background:var(--err-bg);color:var(--err)}
 .chip.good{background:var(--ok-bg);color:var(--ok)}
 .chip.warn{background:var(--warn-bg);color:var(--warn)}
+.chip.info{background:var(--info-bg);color:var(--info)}
 
-/* Raw JSON */
 .raw-block{ margin-top:16px; border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface); overflow:hidden; }
 .raw-block summary{ padding:14px 17px; cursor:pointer; font-size:13px; font-weight:600; list-style:none; display:flex; align-items:center; gap:10px; color:var(--text); }
 .raw-block summary::-webkit-details-marker{display:none}
@@ -347,7 +339,6 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ opacity:0; transform:rotate(90
 }
 html[data-theme="light"] .raw-block pre{ background:rgba(0,0,0,.04); color:#1d1d1f; }
 
-/* ═══════ INFO MODAL + GUIDE ═══════ */
 .info-modal{
   position:relative; width:min(500px,100%);
   max-height:min(84vh,720px);
@@ -366,6 +357,7 @@ html[data-theme="light"] .raw-block pre{ background:rgba(0,0,0,.04); color:#1d1d
 .info-modal p{ margin-bottom:12px; font-size:13.5px; line-height:1.65; color:var(--text-3); }
 .info-modal p:last-child{margin-bottom:0}
 .info-modal strong{color:var(--text);font-weight:600}
+.info-modal a{color:var(--info);text-decoration:underline;text-underline-offset:2px}
 
 .info-modal--guide{ width:min(1040px,100%); max-height:min(92vh,860px); padding:26px 28px 28px; }
 .info-modal--guide h3{ margin-bottom:6px; }
@@ -387,25 +379,9 @@ html[data-theme="light"] .raw-block pre{ background:rgba(0,0,0,.04); color:#1d1d
 .step-body code{ font-family:var(--font-mono); font-size:11px; background:var(--chip-bg); padding:1.5px 5px; border-radius:4px; color:var(--text-2); }
 .step-body .tip{ margin-top:8px; font-size:11px; color:var(--text-4); font-style:italic; }
 
-/* Repository */
 .repo-list{ display:grid; gap:8px; margin-top:16px; list-style:none; }
 .repo-list a{ display:flex; align-items:center; gap:11px; padding:13px 15px; border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface); font-size:13.5px; font-weight:600; letter-spacing:-.01em; color:var(--text); transition:background .22s var(--ease),border-color .22s var(--ease),transform .22s var(--ease); }
 .repo-list a:hover{ background:var(--surface-hi); border-color:var(--border-hi); transform:translateY(-2px); }
-
-/* Consent modal */
-.consent-list{ display:grid; gap:8px; margin:16px 0 20px; }
-.consent-item{ display:flex; align-items:flex-start; gap:11px; padding:11px 13px; border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface); font-size:12.5px; line-height:1.5; color:var(--text-2); }
-.consent-item .ic{ flex-shrink:0; width:16px; height:16px; color:var(--err); margin-top:1px; }
-.consent-check{ display:flex; align-items:flex-start; gap:10px; padding:13px 15px; border:1px solid var(--border-hi); border-radius:var(--r-md); background:var(--surface-hi); cursor:pointer; user-select:none; }
-.consent-check input{ display:none; }
-.consent-check .box{ flex-shrink:0; width:18px;height:18px; border:1.5px solid var(--text-3); border-radius:5px; display:grid; place-items:center; transition:background .2s var(--ease),border-color .2s var(--ease); }
-.consent-check .box svg{ opacity:0; transition:opacity .18s var(--ease); color:#000; }
-.consent-check input:checked ~ .box{ background:var(--btn-primary-bg); border-color:var(--btn-primary-bg); }
-.consent-check input:checked ~ .box svg{ opacity:1; }
-.consent-check .lbl{ font-size:12.5px; line-height:1.5; color:var(--text-2); }
-.consent-actions{ display:flex; gap:10px; margin-top:18px; }
-.consent-actions .btn-sm{ flex:1; justify-content:center; height:44px; font-size:14px; }
-.consent-actions .btn-sm:disabled{ opacity:.35; cursor:not-allowed; }
 
 footer{ position:relative; z-index:10; padding:22px 20px calc(26px + env(safe-area-inset-bottom)); text-align:center; font-size:11.5px; letter-spacing:.01em; color:var(--text-4); }
 
@@ -460,12 +436,11 @@ footer{ position:relative; z-index:10; padding:22px 20px calc(26px + env(safe-ar
 <main id="hero">
   <h1 class="hero-title">Are you <em>anonymous?</em></h1>
   <p class="hero-sub">
-    A forensic-level client-side audit. Your IP, exact coordinates, ISP, GPU, screen,
-    fonts, codecs, audio stack, media devices, storage, permissions and more —
-    harvested the same way trackers and attackers do it. Nothing leaves your device.
+    A deep client-side audit. Every signal a tracker can read — plus the signals your
+    browser deliberately refuses to hand over, and why. Nothing leaves your device.
   </p>
   <div class="cta">
-    <button class="btn btn-primary" onclick="openScanFlow()">
+    <button class="btn btn-primary" onclick="startScan()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
       Run full exposure scan
     </button>
@@ -475,75 +450,6 @@ footer{ position:relative; z-index:10; padding:22px 20px calc(26px + env(safe-ar
 
 <footer>© 2026 Vibex — Security</footer>
 
-<!-- ═══════ CONSENT MODAL ═══════ -->
-<div class="modal-backdrop" id="consentBackdrop" role="dialog" aria-modal="true">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-head-title">
-        <span class="dot" style="background:var(--err);box-shadow:0 0 0 0 var(--err-bg)"></span>
-        Acknowledgment required
-      </div>
-      <button class="icon-btn" onclick="closeConsent()" aria-label="Close">
-        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-      </button>
-    </div>
-    <div class="modal-body">
-      <p style="font-size:13.5px;line-height:1.6;color:var(--text-3);margin-bottom:14px">
-        This scan deliberately extracts every identifiable signal your browser will hand over.
-        Some of what you are about to see is <strong style="color:var(--text)">personally sensitive</strong> —
-        exact location, ISP, device model, hardware fingerprint — and is precisely the data
-        advertisers, trackers and attackers collect about you in the wild.
-      </p>
-
-      <div class="consent-list">
-        <div class="consent-item">
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
-          <span>Approximate &amp; precise IP-based geolocation (city, postal, coordinates, ISP, ASN)</span>
-        </div>
-        <div class="consent-item">
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
-          <span>WebRTC ICE candidates — may include local LAN IPv4 / IPv6 addresses</span>
-        </div>
-        <div class="consent-item">
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
-          <span>GPU vendor &amp; model (via WebGL), installed font list, canvas + audio hashes</span>
-        </div>
-        <div class="consent-item">
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
-          <span>Screen metrics, colour depth, pixel ratio, CPU cores, RAM, battery, network class</span>
-        </div>
-        <div class="consent-item">
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
-          <span>Media devices (mic/camera/speaker counts), codec support, audio pipeline latency</span>
-        </div>
-        <div class="consent-item">
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
-          <span>Storage quota usage, IndexedDB databases, granted permission states</span>
-        </div>
-      </div>
-
-      <p style="font-size:12px;line-height:1.55;color:var(--text-4);margin-bottom:16px">
-        Nothing is transmitted anywhere. Everything is computed locally and displayed to you.
-        The point is to show you your own exposure surface.
-      </p>
-
-      <label class="consent-check" for="consentBox">
-        <input type="checkbox" id="consentBox" onchange="document.getElementById('consentGo').disabled=!this.checked">
-        <span class="box">
-          <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.4l3.6 3.6L13.5 4.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </span>
-        <span class="lbl">I understand that this tool will expose personally-identifying information about my browser and network, and I want to see it anyway.</span>
-      </label>
-
-      <div class="consent-actions">
-        <button class="btn-sm line" onclick="closeConsent()">Cancel</button>
-        <button class="btn-sm solid" id="consentGo" disabled onclick="acceptConsent()">I acknowledge — run scan</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════ SCAN MODAL ═══════ -->
 <div class="modal-backdrop" id="scanModalBackdrop" role="dialog" aria-modal="true" aria-label="Privacy scan">
   <div class="modal modal--wide">
     <div class="modal-header">
@@ -606,7 +512,6 @@ footer{ position:relative; z-index:10; padding:22px 20px calc(26px + env(safe-ar
   </div>
 </div>
 
-<!-- ═══════ INFO MODAL ═══════ -->
 <div class="info-backdrop" id="infoModalBackdrop" role="dialog" aria-modal="true">
   <div class="info-modal" id="infoModal">
     <button class="icon-btn" onclick="closeInfoModal()" aria-label="Close">
@@ -617,7 +522,6 @@ footer{ position:relative; z-index:10; padding:22px 20px calc(26px + env(safe-ar
   </div>
 </div>
 
-<!-- ═══════ REPOSITORY MODAL ═══════ -->
 <div class="info-backdrop" id="repoModalBackdrop" role="dialog" aria-modal="true">
   <div class="info-modal">
     <button class="icon-btn" onclick="closeRepositoryModal()" aria-label="Close">
@@ -648,6 +552,10 @@ function toggleTheme(){
   const current = document.documentElement.getAttribute("data-theme") || "dark";
   applyTheme(current === "dark" ? "light" : "dark");
 }
+(function(){
+  const t = document.documentElement.getAttribute("data-theme") || "dark";
+  if (metaTheme) metaTheme.setAttribute("content", t === "light" ? "#fbfbfd" : "#000000");
+})();
 
 /* ═══════ HELPERS ═══════ */
 const $ = (id) => document.getElementById(id);
@@ -658,20 +566,15 @@ const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 const b2mb = (b) => (b / 1048576).toFixed(2) + " MB";
 const b2gb = (b) => (b / 1073741824).toFixed(2) + " GB";
 
-/* ═══════ MODAL MANAGEMENT ═══════ */
+/* ═══════ MODALS ═══════ */
 let lastFocused = null;
 function lockScroll(){ document.body.style.overflow = "hidden"; }
 function unlockScroll(){
   const anyOpen =
-    $("consentBackdrop").classList.contains("is-open") ||
     $("scanModalBackdrop").classList.contains("is-open") ||
     $("infoModalBackdrop").classList.contains("is-open") ||
     $("repoModalBackdrop").classList.contains("is-open");
   if (!anyOpen) document.body.style.overflow = "";
-}
-function closeConsent(){
-  $("consentBackdrop").classList.remove("is-open"); unlockScroll();
-  if (lastFocused) lastFocused.focus();
 }
 function closeScanModal(){
   $("scanModalBackdrop").classList.remove("is-open"); unlockScroll();
@@ -686,7 +589,6 @@ function closeRepositoryModal(){
   $("repoModalBackdrop").classList.remove("is-open"); unlockScroll();
   if (lastFocused) lastFocused.focus();
 }
-$("consentBackdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeConsent(); });
 $("scanModalBackdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeScanModal(); });
 $("infoModalBackdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeInfoModal(); });
 $("repoModalBackdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeRepositoryModal(); });
@@ -695,27 +597,10 @@ document.addEventListener("keydown", (e) => {
   if ($("repoModalBackdrop").classList.contains("is-open")) return closeRepositoryModal();
   if ($("infoModalBackdrop").classList.contains("is-open")) return closeInfoModal();
   if ($("scanModalBackdrop").classList.contains("is-open")) return closeScanModal();
-  if ($("consentBackdrop").classList.contains("is-open")) return closeConsent();
 });
 function openRepositoryModal(){
   lastFocused = document.activeElement;
   $("repoModalBackdrop").classList.add("is-open"); lockScroll();
-}
-
-/* ═══════ CONSENT FLOW ═══════ */
-const CONSENT_KEY = "vibex-consent-v1";
-function openScanFlow(){
-  lastFocused = document.activeElement;
-  let accepted = false;
-  try { accepted = localStorage.getItem(CONSENT_KEY) === "1"; } catch(e){}
-  if (accepted){ startScan(); return; }
-  $("consentBackdrop").classList.add("is-open");
-  lockScroll();
-}
-function acceptConsent(){
-  try { localStorage.setItem(CONSENT_KEY, "1"); } catch(e){}
-  closeConsent();
-  startScan();
 }
 function startScan(){
   lastFocused = document.activeElement;
@@ -726,7 +611,7 @@ function startScan(){
   runFullScan();
 }
 
-/* ═══════ INFO / GUIDE CONTENT ═══════ */
+/* ═══════ INFO CONTENT ═══════ */
 const GUIDE_HTML = `
   <p class="info-lede">Seven steps, ordered by effort vs. payoff. Start at the top and re-scan after each change to watch your score move.</p>
   <div class="step-grid">
@@ -750,11 +635,12 @@ const GUIDE_HTML = `
 const INFO = {
   guide: { title: "User Guide", html: `
     <p>Everything happens <strong>inside this tab</strong>. No IP, fingerprint or result ever leaves your device.</p>
-    <p>This scan reveals the same signals that advertising networks, analytics SDKs and attackers read every time you load a page. Look at them, understand them, then work through the guide to shrink your footprint.</p>
+    <p>This scan reveals the same signals that advertising networks, analytics SDKs and attackers read every time you load a page — plus an honest list of what your browser <em>refuses</em> to expose.</p>
     <p>The score is out of 100 — higher is better.</p>` },
   privacy: { title: "Privacy Policy", html: `
     <p>We collect nothing. There is no backend.</p>
-    <p>No cookies, no analytics, no telemetry. Only public lookup services the scan itself uses: ipify, ipapi.co, and three DoH resolvers (Google, Cloudflare, Quad9). They see your IP the same way any website does.</p>
+    <p>No cookies, no analytics, no telemetry. Only public lookup services the scan itself uses: ipify, ipapi.co, ipinfo.io, and three DoH resolvers (Google, Cloudflare, Quad9). They see your IP the same way any website does.</p>
+    <p>For the record: a browser <strong>cannot</strong> read your saved passwords, other devices' MAC addresses, your LAN device list, or files on your disk. Any page claiming otherwise is lying or malicious. To check if your email has appeared in known breaches, use <a href="https://haveibeenpwned.com" target="_blank" rel="noopener">haveibeenpwned.com</a>; Chrome, Firefox and Safari also have built-in password compromise checks.</p>
     <p>Privacy isn't a feature here — it's the entire product.</p>` }
 };
 function openInfoModal(type){
@@ -774,7 +660,7 @@ function openInstructions(){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   COLLECTORS — the harvest
+   COLLECTORS
    ═══════════════════════════════════════════════════════════ */
 let scanning = false;
 let scoreChart = null;
@@ -788,52 +674,38 @@ async function sha256Hex(input){
   }catch(e){ return null; }
 }
 
-/* IP + full geolocation */
 async function getIpAndGeo(){
-  let publicIp = null, ipv6 = null, geo = {}, geo2 = {};
-  try{
-    const r = await fetch("https://api.ipify.org?format=json");
-    if (r.ok){ const j = await r.json(); publicIp = j.ip; }
-  }catch(e){}
-  try{
-    const r6 = await fetch("https://api64.ipify.org?format=json");
-    if (r6.ok){ const j = await r6.json(); ipv6 = (j.ip && j.ip.includes(":")) ? j.ip : null; if (!publicIp) publicIp = j.ip; }
-  }catch(e){}
-  try{
-    if (publicIp){
-      const r2 = await fetch(`https://ipapi.co/${publicIp}/json/`);
-      if (r2.ok) geo = await r2.json();
-    }
-  }catch(e){}
-  try{
-    const r3 = await fetch("https://ipinfo.io/json");
-    if (r3.ok){ geo2 = await r3.json(); if (!publicIp) publicIp = geo2.ip; }
-  }catch(e){}
+  let publicIp = null, ipv6 = null, geo = {}, geo2 = {}, geo3 = {};
+  try{ const r = await fetch("https://api.ipify.org?format=json"); if (r.ok){ const j = await r.json(); publicIp = j.ip; } }catch(e){}
+  try{ const r6 = await fetch("https://api64.ipify.org?format=json"); if (r6.ok){ const j = await r6.json(); ipv6 = (j.ip && j.ip.includes(":")) ? j.ip : null; if (!publicIp) publicIp = j.ip; } }catch(e){}
+  try{ if (publicIp){ const r2 = await fetch(`https://ipapi.co/${publicIp}/json/`); if (r2.ok) geo = await r2.json(); } }catch(e){}
+  try{ const r3 = await fetch("https://ipinfo.io/json"); if (r3.ok){ geo2 = await r3.json(); if (!publicIp) publicIp = geo2.ip; } }catch(e){}
+  try{ if (publicIp){ const r4 = await fetch(`https://ipwho.is/${publicIp}`); if (r4.ok) geo3 = await r4.json(); } }catch(e){}
 
   const merged = {
     publicIp: publicIp || "unknown",
     ipv6: ipv6 || null,
-    city: geo.city || geo2.city || null,
-    region: geo.region || geo2.region || null,
-    country: geo.country_name || geo2.country || null,
-    countryCode: geo.country_code || geo2.country || null,
-    postal: geo.postal || geo2.postal || null,
-    latitude: (geo.latitude !== undefined) ? geo.latitude : (geo2.loc ? geo2.loc.split(",")[0] : null),
-    longitude: (geo.longitude !== undefined) ? geo.longitude : (geo2.loc ? geo2.loc.split(",")[1] : null),
-    timezone: geo.timezone || geo2.timezone || null,
+    city: geo.city || geo2.city || (geo3 && geo3.city) || null,
+    region: geo.region || geo2.region || (geo3 && geo3.region) || null,
+    country: geo.country_name || geo2.country || (geo3 && geo3.country) || null,
+    countryCode: geo.country_code || geo2.country || (geo3 && geo3.country_code) || null,
+    postal: geo.postal || geo2.postal || (geo3 && geo3.postal) || null,
+    latitude: (geo.latitude !== undefined) ? geo.latitude : (geo2.loc ? geo2.loc.split(",")[0] : ((geo3 && geo3.latitude) || null)),
+    longitude: (geo.longitude !== undefined) ? geo.longitude : (geo2.loc ? geo2.loc.split(",")[1] : ((geo3 && geo3.longitude) || null)),
+    timezone: geo.timezone || geo2.timezone || (geo3 && geo3.timezone && geo3.timezone.id) || null,
     utcOffset: geo.utc_offset || null,
-    org: geo.org || geo2.org || null,
-    asn: geo.asn || geo2.asn || null,
+    org: geo.org || geo2.org || (geo3 && geo3.connection && geo3.connection.org) || null,
+    isp: geo.org || geo2.org || (geo3 && geo3.connection && geo3.connection.isp) || null,
+    asn: geo.asn || geo2.asn || (geo3 && geo3.connection && geo3.connection.asn) || null,
     currency: geo.currency || null,
     languages: geo.languages || null,
     callingCode: geo.country_calling_code || null,
     isEu: geo.in_eu || null,
-    raw: { ipapi: geo, ipinfo: geo2 }
+    raw: { ipapi: geo, ipinfo: geo2, ipwhois: geo3 }
   };
   return merged;
 }
 
-/* FingerprintJS */
 async function runFingerprint(){
   const out = { id: null, entropyApprox: null, componentsCount: 0, components: {} };
   try{
@@ -844,37 +716,24 @@ async function runFingerprint(){
     out.componentsCount = (res && res.components) ? Object.keys(res.components).length : 0;
     out.entropyApprox = Math.min(100, Math.round(out.componentsCount * 6));
     if (res && res.components){
-      Object.keys(res.components).forEach(k => {
-        try{ out.components[k] = res.components[k].value; }catch(e){}
-      });
+      Object.keys(res.components).forEach(k => { try{ out.components[k] = res.components[k].value; }catch(e){} });
     }
   }catch(e){}
   return out;
 }
 
-/* Client Hints (Chromium) */
 async function getClientHints(){
   try{
     if (!navigator.userAgentData) return null;
-    const low = {
-      brands: navigator.userAgentData.brands || null,
-      mobile: navigator.userAgentData.mobile,
-      platform: navigator.userAgentData.platform || null
-    };
+    const low = { brands: navigator.userAgentData.brands || null, mobile: navigator.userAgentData.mobile, platform: navigator.userAgentData.platform || null };
     let high = null;
     if (navigator.userAgentData.getHighEntropyValues){
-      try{
-        high = await navigator.userAgentData.getHighEntropyValues([
-          "architecture","bitness","model","platformVersion","uaFullVersion",
-          "fullVersionList","wow64"
-        ]);
-      }catch(e){}
+      try{ high = await navigator.userAgentData.getHighEntropyValues(["architecture","bitness","model","platformVersion","uaFullVersion","fullVersionList","wow64"]); }catch(e){}
     }
     return { low, high };
   }catch(e){ return null; }
 }
 
-/* WebGL */
 function getWebGL(){
   try{
     const canvas = document.createElement("canvas");
@@ -898,7 +757,22 @@ function getWebGL(){
   }catch(e){ return null; }
 }
 
-/* Fonts — using both measurement + FontFaceSet */
+async function getWebGPU(){
+  try{
+    if (!navigator.gpu) return null;
+    const adapter = await navigator.gpu.requestAdapter();
+    if (!adapter) return { available: false };
+    let info = null;
+    try{
+      if (adapter.info) info = { vendor: adapter.info.vendor, architecture: adapter.info.architecture, device: adapter.info.device, description: adapter.info.description };
+      else if (adapter.requestAdapterInfo){ const i = await adapter.requestAdapterInfo(); info = { vendor: i.vendor, architecture: i.architecture, device: i.device, description: i.description }; }
+    }catch(e){}
+    let features = [];
+    try{ if (adapter.features) features = Array.from(adapter.features).slice(0, 25); }catch(e){}
+    return { available: true, info, features };
+  }catch(e){ return null; }
+}
+
 function getFonts(){
   try{
     const baseFonts = ["monospace","sans-serif","serif"];
@@ -911,7 +785,8 @@ function getFonts(){
       "Baskerville","Didot","Brush Script MT","Comic Sans MS","Copperplate","Marker Felt",
       "Papyrus","Noteworthy","Chalkboard","Skia","Geneva","Lucida Grande","Zapfino",
       "DejaVu Sans","Liberation Sans","Ubuntu","Cantarell","Roboto","Noto Sans",
-      "Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji"
+      "Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji","Ubuntu Mono","Fira Code",
+      "JetBrains Mono","Cascadia Code","Source Code Pro","Inconsolata","Hack"
     ];
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -931,32 +806,35 @@ function getFonts(){
   }catch(e){ return []; }
 }
 
-/* Math / trig constants */
 function getMathFP(){
   try{
-    return {
-      sin1: Math.sin(1), cos1: Math.cos(1), tan1: Math.tan(1),
-      log2: Math.log(2), exp1: Math.exp(1), atan1: Math.atan(1),
-      sqrt2: Math.sqrt(2), pow2_10: Math.pow(2,10),
-      sinh1: Math.sinh(1), cosh1: Math.cosh(1), tanh1: Math.tanh(1),
-      e: Math.E, pi: Math.PI
-    };
+    return { sin1: Math.sin(1), cos1: Math.cos(1), tan1: Math.tan(1), log2: Math.log(2), exp1: Math.exp(1), atan1: Math.atan(1), sqrt2: Math.sqrt(2), pow2_10: Math.pow(2,10), sinh1: Math.sinh(1), cosh1: Math.cosh(1), tanh1: Math.tanh(1), e: Math.E, pi: Math.PI };
   }catch(e){ return null; }
 }
 
-/* Codecs — accurate */
+function getMathPrecision(){
+  try{
+    // Timing precision — high resolution timers are a fingerprint
+    const t0 = performance.now();
+    let x = 0;
+    for (let i = 0; i < 100000; i++) x += Math.sin(i);
+    const t1 = performance.now();
+    return { loopMs: +(t1 - t0).toFixed(3), precision: performance.now() % 1 !== 0 ? "sub-ms" : "coarse" };
+  }catch(e){ return null; }
+}
+
 function getCodecs(){
   try{
     const v = document.createElement("video");
     const a = document.createElement("audio");
     const videoTypes = [
-      { label: "H.264 Baseline",   type: 'video/mp4; codecs="avc1.42E01E"' },
-      { label: "H.264 High",       type: 'video/mp4; codecs="avc1.64001F"' },
-      { label: "H.265 / HEVC",     type: 'video/mp4; codecs="hev1.1.6.L93.B0"' },
-      { label: "VP8",              type: 'video/webm; codecs="vp8"' },
-      { label: "VP9",              type: 'video/webm; codecs="vp9"' },
-      { label: "AV1",              type: 'video/mp4; codecs="av01.0.05M.08"' },
-      { label: "Theora",           type: 'video/ogg; codecs="theora"' }
+      { label: "H.264 Baseline", type: 'video/mp4; codecs="avc1.42E01E"' },
+      { label: "H.264 High",     type: 'video/mp4; codecs="avc1.64001F"' },
+      { label: "H.265 / HEVC",   type: 'video/mp4; codecs="hev1.1.6.L93.B0"' },
+      { label: "VP8",            type: 'video/webm; codecs="vp8"' },
+      { label: "VP9",            type: 'video/webm; codecs="vp9"' },
+      { label: "AV1",            type: 'video/mp4; codecs="av01.0.05M.08"' },
+      { label: "Theora",         type: 'video/ogg; codecs="theora"' }
     ];
     const audioTypes = [
       { label: "AAC",     type: 'audio/mp4; codecs="mp4a.40.2"' },
@@ -972,7 +850,6 @@ function getCodecs(){
   }catch(e){ return { video: [], audio: [] }; }
 }
 
-/* Speech synthesis voices (leaks installed locales) */
 function getVoices(){
   try{
     if (!window.speechSynthesis || !speechSynthesis.getVoices) return [];
@@ -980,21 +857,14 @@ function getVoices(){
   }catch(e){ return []; }
 }
 
-/* Battery */
 async function getBattery(){
   try{
     if (!navigator.getBattery) return null;
     const b = await navigator.getBattery();
-    return {
-      charging: b.charging,
-      level: Math.round((b.level || 0) * 100),
-      chargingTime: b.chargingTime,
-      dischargingTime: b.dischargingTime
-    };
+    return { charging: b.charging, level: Math.round((b.level || 0) * 100), chargingTime: b.chargingTime, dischargingTime: b.dischargingTime };
   }catch(e){ return null; }
 }
 
-/* Media devices — counts only (no permission) */
 async function getMediaDevices(){
   try{
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return null;
@@ -1003,13 +873,12 @@ async function getMediaDevices(){
     const detail = [];
     devices.forEach(d => {
       if (counts[d.kind] !== undefined) counts[d.kind]++;
-      detail.push({ kind: d.kind, label: d.label || "(label hidden)", groupId: d.groupId ? d.groupId.slice(0, 8) + "…" : null });
+      detail.push({ kind: d.kind, label: d.label || "(label hidden — no permission)", hasGroupId: !!d.groupId });
     });
     return { counts, total: devices.length, detail };
   }catch(e){ return null; }
 }
 
-/* Media capabilities — audio pipeline */
 async function getAudioPipeline(){
   try{
     const AC = window.AudioContext || window.webkitAudioContext;
@@ -1027,37 +896,17 @@ async function getAudioPipeline(){
   }catch(e){ return null; }
 }
 
-/* Storage */
 async function getStorageInfo(){
   const out = { estimate: null, databases: null, caches: null, serviceWorkers: null };
-  try{
-    if (navigator.storage && navigator.storage.estimate){
-      const est = await navigator.storage.estimate();
-      out.estimate = { usage: est.usage, quota: est.quota };
-    }
-  }catch(e){}
-  try{
-    if (indexedDB.databases){
-      out.databases = await indexedDB.databases();
-    }
-  }catch(e){}
-  try{
-    if (window.caches && caches.keys){
-      out.caches = await caches.keys();
-    }
-  }catch(e){}
-  try{
-    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations){
-      const regs = await navigator.serviceWorker.getRegistrations();
-      out.serviceWorkers = regs.map(r => (r.scope || "").slice(0, 60));
-    }
-  }catch(e){}
+  try{ if (navigator.storage && navigator.storage.estimate){ const est = await navigator.storage.estimate(); out.estimate = { usage: est.usage, quota: est.quota }; } }catch(e){}
+  try{ if (indexedDB.databases){ out.databases = await indexedDB.databases(); } }catch(e){}
+  try{ if (window.caches && caches.keys){ out.caches = await caches.keys(); } }catch(e){}
+  try{ if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations){ const regs = await navigator.serviceWorker.getRegistrations(); out.serviceWorkers = regs.map(r => (r.scope || "").slice(0, 80)); } }catch(e){}
   return out;
 }
 
-/* Permissions */
 async function getPermissions(){
-  const list = ["geolocation","notifications","camera","microphone","clipboard-read","clipboard-write","persistent-storage","midi","background-sync","accelerometer","gyroscope","magnetometer"];
+  const list = ["geolocation","notifications","camera","microphone","clipboard-read","clipboard-write","persistent-storage","midi","background-sync","accelerometer","gyroscope","magnetometer","payment-handler","storage-access","screen-wake-lock"];
   const out = {};
   await Promise.all(list.map(async (p) => {
     try{
@@ -1070,7 +919,6 @@ async function getPermissions(){
   return out;
 }
 
-/* Network */
 function getConnection(){
   try{
     const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
@@ -1086,51 +934,25 @@ function getConnection(){
   }catch(e){ return null; }
 }
 
-/* Locale & Intl */
 function getIntlInfo(){
   try{
     const dt = Intl.DateTimeFormat().resolvedOptions();
-    let numberingSystem = null, calendar = null;
+    let numberingSystem = null, calendar = null, currency = null, firstDay = null;
     try{ numberingSystem = new Intl.NumberFormat().resolvedOptions().numberingSystem; }catch(e){}
     try{ calendar = dt.calendar; }catch(e){}
-    const currencyFmt = (function(){
-      try{ return new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).resolvedOptions().currency; }
-      catch(e){ return null; }
-    })();
-    const firstDay = (function(){
-      try{
-        const locale = new Intl.Locale(dt.locale);
-        return locale.weekInfo ? locale.weekInfo.firstDay : null;
-      }catch(e){ return null; }
-    })();
-    return { ...dt, numberingSystem, currency: currencyFmt, firstDayOfWeek: firstDay };
+    try{ currency = new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).resolvedOptions().currency; }catch(e){}
+    try{ const locale = new Intl.Locale(dt.locale); firstDay = locale.weekInfo ? locale.weekInfo.firstDay : null; }catch(e){}
+    return { ...dt, numberingSystem, currency, firstDayOfWeek: firstDay };
   }catch(e){ return null; }
 }
 
-/* Browser surface */
 function getBrowserSurface(){
-  const plugins = [];
-  try{
-    if (navigator.plugins){
-      for (let i = 0; i < navigator.plugins.length; i++){
-        const p = navigator.plugins[i];
-        plugins.push({ name: p.name, description: p.description, filename: p.filename, length: p.length });
-      }
-    }
-  }catch(e){}
-  const mimes = [];
-  try{
-    if (navigator.mimeTypes){
-      for (let i = 0; i < navigator.mimeTypes.length; i++){
-        const m = navigator.mimeTypes[i];
-        mimes.push({ type: m.type, suffixes: m.suffixes, description: m.description });
-      }
-    }
-  }catch(e){}
+  const plugins = [], mimes = [];
+  try{ if (navigator.plugins){ for (let i = 0; i < navigator.plugins.length; i++){ const p = navigator.plugins[i]; plugins.push({ name: p.name, description: p.description, filename: p.filename, length: p.length }); } } }catch(e){}
+  try{ if (navigator.mimeTypes){ for (let i = 0; i < navigator.mimeTypes.length; i++){ const m = navigator.mimeTypes[i]; mimes.push({ type: m.type, suffixes: m.suffixes, description: m.description }); } } }catch(e){}
   return { plugins, mimeTypes: mimes };
 }
 
-/* Feature detection */
 function getFeatureDetection(){
   const checks = {
     webgl: !!document.createElement("canvas").getContext("webgl"),
@@ -1160,7 +982,9 @@ function getFeatureDetection(){
     credentials: !!(navigator.credentials),
     paymentRequest: "PaymentRequest" in window,
     gamepad: "getGamepads" in navigator,
-    xr: !!(navigator.xr)
+    xr: !!(navigator.xr),
+    fileSystemAccess: "showOpenFilePicker" in window,
+    contactsManager: "contacts" in navigator
   };
   const mediaQueries = {
     "prefers-color-scheme: dark":  window.matchMedia("(prefers-color-scheme: dark)").matches,
@@ -1173,12 +997,101 @@ function getFeatureDetection(){
     "any-pointer: fine":           window.matchMedia("(any-pointer: fine)").matches,
     "orientation: portrait":       window.matchMedia("(orientation: portrait)").matches,
     "forced-colors: active":       window.matchMedia("(forced-colors: active)").matches,
-    "display-mode: standalone":    window.matchMedia("(display-mode: standalone)").matches
+    "display-mode: standalone":    window.matchMedia("(display-mode: standalone)").matches,
+    "inverted-colors: inverted":   window.matchMedia("(inverted-colors: inverted)").matches
   };
   return { checks, mediaQueries };
 }
 
-/* Canvas hash — richer sample */
+/* Authorized external hardware the user has previously granted this origin */
+async function getAuthorizedDevices(){
+  const out = { usb: [], hid: [], serial: [], gamepads: [], bluetooth: null, usbSupported: false, hidSupported: false, serialSupported: false, gamepadSupported: false };
+  try{
+    if (navigator.usb && navigator.usb.getDevices){
+      out.usbSupported = true;
+      const devs = await navigator.usb.getDevices();
+      out.usb = devs.map(d => ({ vendorId: d.vendorId, productId: d.productId, productName: d.productName || null, manufacturerName: d.manufacturerName || null, serialNumber: d.serialNumber ? "(present)" : null }));
+    }
+  }catch(e){}
+  try{
+    if (navigator.hid && navigator.hid.getDevices){
+      out.hidSupported = true;
+      const devs = await navigator.hid.getDevices();
+      out.hid = devs.map(d => ({ vendorId: d.vendorId, productId: d.productId, productName: d.productName || null }));
+    }
+  }catch(e){}
+  try{
+    if (navigator.serial && navigator.serial.getPorts){
+      out.serialSupported = true;
+      const ports = await navigator.serial.getPorts();
+      out.serial = ports.map(() => ({ authorized: true }));
+    }
+  }catch(e){}
+  try{
+    if (navigator.getGamepads){
+      out.gamepadSupported = true;
+      const gp = navigator.getGamepads();
+      for (let i = 0; i < gp.length; i++){
+        if (gp[i]) out.gamepads.push({ id: gp[i].id, mapping: gp[i].mapping, buttons: gp[i].buttons.length, axes: gp[i].axes.length });
+      }
+    }
+  }catch(e){}
+  try{ if (navigator.bluetooth && navigator.bluetooth.getAvailability){ out.bluetooth = await navigator.bluetooth.getAvailability(); } }catch(e){}
+  return out;
+}
+
+function getCookieNames(){
+  try{
+    const raw = document.cookie || "";
+    if (!raw) return [];
+    return raw.split(";").map(p => {
+      const [k, v] = p.split("=");
+      return { name: (k || "").trim(), valueLength: (v || "").length };
+    }).filter(x => x.name);
+  }catch(e){ return []; }
+}
+
+function getStorageKeys(){
+  const out = { localStorage: [], sessionStorage: [] };
+  try{
+    for (let i = 0; i < localStorage.length; i++){
+      const k = localStorage.key(i);
+      const v = localStorage.getItem(k) || "";
+      out.localStorage.push({ key: k, valueLength: v.length });
+    }
+  }catch(e){}
+  try{
+    for (let i = 0; i < sessionStorage.length; i++){
+      const k = sessionStorage.key(i);
+      const v = sessionStorage.getItem(k) || "";
+      out.sessionStorage.push({ key: k, valueLength: v.length });
+    }
+  }catch(e){}
+  return out;
+}
+
+function getNavigationTiming(){
+  try{
+    const nav = performance.getEntriesByType("navigation")[0];
+    if (!nav) return null;
+    return {
+      dns: Math.round(nav.domainLookupEnd - nav.domainLookupStart),
+      tcp: Math.round(nav.connectEnd - nav.connectStart),
+      tls: nav.secureConnectionStart ? Math.round(nav.connectEnd - nav.secureConnectionStart) : null,
+      ttfb: Math.round(nav.responseStart - nav.requestStart),
+      download: Math.round(nav.responseEnd - nav.responseStart),
+      domInteractive: Math.round(nav.domInteractive - nav.startTime),
+      domComplete: Math.round(nav.domComplete - nav.startTime),
+      transferSize: nav.transferSize || 0,
+      encodedBodySize: nav.encodedBodySize || 0,
+      protocol: nav.nextHopProtocol || null,
+      redirects: nav.redirectCount || 0,
+      type: nav.type || null
+    };
+  }catch(e){ return null; }
+}
+
+/* Canvas + audio hashing */
 async function canvasHash(){
   try{
     const canvas = document.createElement("canvas");
@@ -1203,7 +1116,6 @@ async function canvasHash(){
   }catch(e){ return null; }
 }
 
-/* Audio hash */
 async function audioHash(){
   try{
     const Ctx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
@@ -1225,7 +1137,6 @@ async function audioHash(){
   }catch(e){ return null; }
 }
 
-/* WebRTC */
 async function checkWebrtcCandidates(timeoutMs = 2200){
   const result = { candidates: [], localIPs: [], localIPv6: [], mDNS: [], note: null, supported: false, mdnsObfuscated: false };
   try{
@@ -1235,18 +1146,13 @@ async function checkWebrtcCandidates(timeoutMs = 2200){
 
     const pc = new RTCPeer({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
     const candidates = [];
-    pc.onicecandidate = (ev) => {
-      if (ev.candidate && ev.candidate.candidate) candidates.push(ev.candidate.candidate);
-    };
+    pc.onicecandidate = (ev) => { if (ev.candidate && ev.candidate.candidate) candidates.push(ev.candidate.candidate); };
     try { pc.createDataChannel("vibex"); } catch(e){}
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-
     await new Promise((resolve) => {
       const max = setTimeout(resolve, timeoutMs);
-      pc.onicegatheringstatechange = () => {
-        if (pc.iceGatheringState === "complete"){ clearTimeout(max); resolve(); }
-      };
+      pc.onicegatheringstatechange = () => { if (pc.iceGatheringState === "complete"){ clearTimeout(max); resolve(); } };
     });
     try { pc.close(); } catch(e){}
 
@@ -1264,13 +1170,10 @@ async function checkWebrtcCandidates(timeoutMs = 2200){
     result.localIPs = Array.from(v4);
     result.localIPv6 = Array.from(v6);
     result.mDNS = Array.from(mdns);
-  }catch(e){
-    result.note = "WebRTC gathering failed.";
-  }
+  }catch(e){ result.note = "WebRTC gathering failed."; }
   return result;
 }
 
-/* Trackers */
 function scanTrackers(){
   const found = [];
   const signatures = [
@@ -1294,7 +1197,9 @@ function scanTrackers(){
     { domain: "intercom.io", name: "Intercom" },
     { domain: "criteo.com", name: "Criteo" },
     { domain: "taboola.com", name: "Taboola" },
-    { domain: "outbrain.com", name: "Outbrain" }
+    { domain: "outbrain.com", name: "Outbrain" },
+    { domain: "cloudflareinsights.com", name: "Cloudflare Insights" },
+    { domain: "sentry-cdn.com", name: "Sentry CDN" }
   ];
   try{
     const entries = (performance && performance.getEntriesByType) ? (performance.getEntriesByType("resource") || []) : [];
@@ -1307,7 +1212,6 @@ function scanTrackers(){
   return found;
 }
 
-/* DNS via DoH */
 async function dohLookup(name = "example.com"){
   const endpoints = [
     { name: "Google DNS", url: `https://dns.google/resolve?name=${encodeURIComponent(name)}&type=A` },
@@ -1322,43 +1226,30 @@ async function dohLookup(name = "example.com"){
       const j = await r.json();
       const answers = Array.isArray(j.Answer) ? j.Answer : [];
       const ips = answers.filter(a => a.type === 1).map(a => a.data).filter(Boolean);
-      results[e.name] = { ips, resolver: j.AD ? "DNSSEC-validated" : null };
+      results[e.name] = { ips, dnssec: j.AD ? "validated" : null };
     }catch(err){ results[e.name] = { error: err.message || "network error" }; }
   }));
   return results;
 }
 
-/* Anti-fingerprint / privacy-tool detection */
 function detectPrivacyTools(webgl, adv){
   const signals = [];
   try{
-    // Common spoofed user agents
     const ua = navigator.userAgent || "";
     if (/headless|phantom|puppeteer|playwright|selenium/i.test(ua)) signals.push("Automation framework detected in UA");
-    if (!navigator.webdriver && /headless/i.test(ua)) signals.push("Headless mode");
-
-    // Missing / spoofed WebGL
     if (webgl && webgl.renderer && /swiftshader|llvmpipe|virtualbox|vmware|parallels|qemu|virtual/i.test(webgl.renderer)){
       signals.push("Software or VM renderer (" + webgl.renderer + ")");
     }
-
-    // Timezone mismatch
     const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const offset = new Date().getTimezoneOffset();
     signals.push("Browser TZ: " + browserTz + " (UTC" + (offset <= 0 ? "+" : "-") + Math.abs(offset/60) + ")");
-
-    // Fonts count as a signal
     if (adv && adv.fonts){
       if (adv.fonts.length === 0) signals.push("No fonts detected — likely locked-down browser or spoof");
       else if (adv.fonts.length > 40) signals.push("High font count (" + adv.fonts.length + ") — full OS font set exposed");
     }
-
-    // Media devices
     if (adv && adv.media && adv.media.total === 0){
       signals.push("No media devices enumerated — hardened or sandboxed");
     }
-
-    // Plugin count
     if (navigator.plugins && navigator.plugins.length === 0 && !/safari|firefox/i.test(ua)){
       signals.push("Zero plugins — likely hardened or spoofed Chrome");
     }
@@ -1366,14 +1257,14 @@ function detectPrivacyTools(webgl, adv){
   return signals;
 }
 
-/* One-stop advanced collector */
 async function collectAdvanced(){
-  const [battery, media, storage, permissions] = await Promise.all([
-    getBattery(), getMediaDevices(), getStorageInfo(), getPermissions()
+  const [battery, media, storage, permissions, authorized, webgpu] = await Promise.all([
+    getBattery(), getMediaDevices(), getStorageInfo(), getPermissions(), getAuthorizedDevices(), getWebGPU()
   ]);
   const webgl = getWebGL();
   const fonts = getFonts();
   const mathFP = getMathFP();
+  const mathPrec = getMathPrecision();
   const codecs = getCodecs();
   const voices = getVoices();
   const connection = getConnection();
@@ -1382,18 +1273,21 @@ async function collectAdvanced(){
   const features = getFeatureDetection();
   const clientHints = await getClientHints();
   const audioPipe = await getAudioPipeline();
+  const navTiming = getNavigationTiming();
+  const cookies = getCookieNames();
+  const storageKeys = getStorageKeys();
 
   return {
-    webgl, fonts, math: mathFP, codecs, voices, connection,
-    intl: intlInfo, browserSurface, features, clientHints,
-    audioPipeline: audioPipe,
-    battery, media, storage, permissions
+    webgl, webgpu, fonts, math: mathFP, mathPrecision: mathPrec,
+    codecs, voices, connection, intl: intlInfo,
+    browserSurface, features, clientHints,
+    audioPipeline: audioPipe, navigationTiming: navTiming,
+    cookies, storageKeys,
+    battery, media, storage, permissions, authorized
   };
 }
 
-/* ═══════════════════════════════════════════════════════════
-   SCORING
-   ═══════════════════════════════════════════════════════════ */
+/* ═══════ SCORING ═══════ */
 const HOSTING_RE = /vpn|proxy|hosting|datacenter|data center|server|cloud|digitalocean|linode|ovh|hetzner|m247|mullvad|nord|express|surfshark|private internet|amazon|google|microsoft|azure|oracle|leaseweb|contabo|choopa|vultr|scaleway|upcloud/;
 
 function estimateEntropyBits(d){
@@ -1402,7 +1296,6 @@ function estimateEntropyBits(d){
   const gl = d.webgl || {};
   const adv = d.advanced || {};
   const sys = d.system || {};
-
   if (fp.componentsCount) bits += fp.componentsCount * 2.4;
   if (gl.renderer) bits += 6;
   if (gl.unmaskedRenderer) bits += 3;
@@ -1427,7 +1320,6 @@ function computeCategories(result){
   const d = result.details;
   const ip = d.ip || {};
 
-  /* Connection & IP — 20 */
   let connection = 20;
   if (ip.publicIp && ip.publicIp !== "unknown"){
     const org = String(ip.org || "").toLowerCase();
@@ -1435,7 +1327,6 @@ function computeCategories(result){
   }
   if (ip.latitude && ip.longitude) connection = Math.max(0, connection - 1);
 
-  /* Fingerprint — 25 */
   const fp = d.fingerprint || {};
   const entropy = fp.entropyApprox;
   let fingerprint = 25;
@@ -1450,7 +1341,6 @@ function computeCategories(result){
   if (d.advanced && d.advanced.fonts && d.advanced.fonts.length > 5) fingerprint -= 2;
   fingerprint = clamp(fingerprint, 0, 25);
 
-  /* WebRTC — 10 */
   const wr = d.webrtc || {};
   const leakCount = (wr.localIPs || []).length + (wr.localIPv6 || []).length;
   let webrtc = 10;
@@ -1459,7 +1349,6 @@ function computeCategories(result){
   const media = d.advanced && d.advanced.media;
   if (media && media.total > 0) webrtc = Math.max(0, webrtc - 1);
 
-  /* Trackers & storage — 15 */
   const trackers = d.trackers || [];
   let trackersScore = 15;
   if (trackers.length) trackersScore = Math.max(0, 15 - trackers.length * 3);
@@ -1467,7 +1356,6 @@ function computeCategories(result){
   const storage = d.advanced && d.advanced.storage;
   if (storage && storage.estimate && storage.estimate.usage > 0) trackersScore = Math.max(0, trackersScore - 1);
 
-  /* System & hardware — 20 */
   const sys = d.system || {};
   const adv = d.advanced || {};
   let system = 20;
@@ -1482,7 +1370,6 @@ function computeCategories(result){
   if (adv.media && adv.media.total > 0) system -= 2;
   system = clamp(system, 0, 20);
 
-  /* DNS — 10 */
   const dns = d.dns || {};
   let dnsScore = 10;
   const dnsErrors = Object.values(dns).filter(v => v && v.error).length;
@@ -1507,11 +1394,9 @@ function statusFor(score, max){
   if (r >= 0.5) return "warn";
   return "bad";
 }
-const STATUS_LABEL = { good: "Good", warn: "Weak", bad: "Critical" };
+const STATUS_LABEL = { good: "Good", warn: "Weak", bad: "Critical", info: "Info" };
 
-/* ═══════════════════════════════════════════════════════════
-   CHART
-   ═══════════════════════════════════════════════════════════ */
+/* ═══════ CHART ═══════ */
 function scoreColor(s){
   if (s >= 90) return "#30d158";
   if (s >= 70) return "#0a84ff";
@@ -1550,9 +1435,7 @@ window.addEventListener("themechange", () => {
   scoreChart.update();
 });
 
-/* ═══════════════════════════════════════════════════════════
-   RENDERING
-   ═══════════════════════════════════════════════════════════ */
+/* ═══════ RENDERING ═══════ */
 function setStage(pct, text){
   const bar = $("scanBar");
   if (bar) bar.style.width = clamp(pct, 0, 100) + "%";
@@ -1574,16 +1457,16 @@ function findingCard(opts){
     ? `<div class="chips">${opts.chips.map(c => {
         if (typeof c === "object" && c !== null) return `<span class="chip ${c.cls||""}">${esc(c.label)}</span>`;
         return `<span class="chip">${esc(c)}</span>`;
-      }).join("")}</div>`
-    : "";
+      }).join("")}</div>` : "";
   const noteHtml = opts.note ? `<div class="f-note ${opts.noteCls||""}">${esc(opts.note)}</div>` : "";
-  const dangerCls = opts.danger ? " danger" : "";
+  const cls = (opts.danger ? " danger" : "") + (opts.info ? " info" : "");
+  const status = opts.info ? "info" : opts.status;
   return `
-    <details class="finding${dangerCls}"${opts.open ? " open" : ""}>
+    <details class="finding${cls}"${opts.open ? " open" : ""}>
       <summary>
-        <span class="f-dot ${opts.status}"></span>
+        <span class="f-dot ${status}"></span>
         <span class="f-name">${esc(opts.name)}</span>
-        <span class="f-status ${opts.status}">${STATUS_LABEL[opts.status]}</span>
+        <span class="f-status ${status}">${STATUS_LABEL[status]}</span>
         <svg class="f-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
       </summary>
       <div class="f-body">${rowsHtml}${chipsHtml}${noteHtml}</div>
@@ -1596,7 +1479,6 @@ function renderResults(result){
   const c = result.categories;
   const d = result.details;
 
-  /* Verdict */
   const v = verdictFor(result.score);
   $("scoreNum").textContent = result.score + "%";
   $("scoreNum").style.color = v.color;
@@ -1605,9 +1487,7 @@ function renderResults(result){
   $("scoreSub").textContent = v.sub;
   updateChart(result.score);
 
-  /* Mini stats */
   const entropyBits = estimateEntropyBits(d);
-  const fp = d.fingerprint || {};
   const trackers = d.trackers || [];
   const wr = d.webrtc || {};
   const leaks = (wr.localIPs || []).length + (wr.localIPv6 || []).length;
@@ -1623,7 +1503,6 @@ function renderResults(result){
     `<div class="stat${s.danger ? " danger" : ""}"><div class="stat-num">${esc(s.n)}</div><div class="stat-lbl">${esc(s.l)}</div></div>`
   ).join("");
 
-  /* Critical banner */
   if (result.score < 45){
     $("criticalBanner").classList.add("is-on");
     $("criticalText").textContent = "You are highly identifiable. Every site you visit can single you out.";
@@ -1633,9 +1512,8 @@ function renderResults(result){
 
   const cards = [];
 
-  /* ───── 1. Connection & IP ───── */
+  /* 1 — Connection & IP */
   const ip = d.ip || {};
-  const hasLocation = ip.city || ip.latitude;
   cards.push(findingCard({
     name: "Connection & IP — real location exposed",
     status: statusFor(c.connection.score, c.connection.max),
@@ -1651,20 +1529,21 @@ function renderResults(result){
       kvRow("Latitude / Longitude", (ip.latitude && ip.longitude) ? (ip.latitude + ", " + ip.longitude) : "—", ip.latitude ? "bad" : ""),
       kvRow("Timezone", ip.timezone || "—"),
       kvRow("UTC offset", ip.utcOffset || "—"),
-      kvRow("ISP / Organization", ip.org || "—", "plain"),
+      kvRow("ISP", ip.isp || "—", "plain"),
+      kvRow("Organization", ip.org || "—", "plain"),
       kvRow("ASN", ip.asn || "—"),
       kvRow("Currency", ip.currency || "—"),
       kvRow("Calling code", ip.callingCode || "—"),
       kvRow("Network type", HOSTING_RE.test(String(ip.org||"").toLowerCase()) ? "Hosting / VPN" : "Residential / consumer",
         HOSTING_RE.test(String(ip.org||"").toLowerCase()) ? "good" : "bad")
     ].filter(Boolean),
-    note: hasLocation
+    note: (ip.city || ip.latitude)
       ? "Any website you load can resolve your public IP to this location in milliseconds — no permission required."
       : "Your public IP is exposed to every site you visit.",
     noteCls: "critical"
   }));
 
-  /* ───── 2. WebRTC leaks ───── */
+  /* 2 — WebRTC */
   const localIPs = wr.localIPs || [];
   const localIPv6 = wr.localIPv6 || [];
   const mdns = wr.mDNS || [];
@@ -1694,15 +1573,15 @@ function renderResults(result){
     noteCls: (localIPs.length + localIPv6.length) ? "critical" : "good"
   }));
 
-  /* ───── 3. Browser fingerprint ───── */
+  /* 3 — Fingerprint */
   const gl = d.webgl || {};
   const adv = d.advanced || {};
   const fonts = adv.fonts || [];
   const canvasInfo = d.canvas || {};
   const audioH = d.audio;
   const fpRows = [
-    kvRow("FingerprintJS ID", fp.id ? fp.id : "—"),
-    kvRow("Components read", fp.componentsCount ? String(fp.componentsCount) : "—"),
+    kvRow("FingerprintJS ID", (d.fingerprint && d.fingerprint.id) ? d.fingerprint.id : "—"),
+    kvRow("Components read", (d.fingerprint && d.fingerprint.componentsCount) ? String(d.fingerprint.componentsCount) : "—"),
     kvRow("Entropy estimate", entropyBits + " bits"),
     kvRow("Canvas hash", canvasInfo.hash ? trunc(canvasInfo.hash, 24) : "not available"),
     kvRow("Audio hash", audioH ? trunc(audioH, 24) : "not available"),
@@ -1724,12 +1603,56 @@ function renderResults(result){
     danger: c.fingerprint.score < 12,
     rows: fpRows,
     chips: fontChips,
-    note: (gl.unmaskedRenderer)
+    note: gl.unmaskedRenderer
       ? "Your exact GPU model is exposed via WebGL. Combined with canvas/audio hashes and font list, this is a stable identifier across sessions — clearing cookies does not reset it."
       : "Canvas, audio and WebGL hashes together build a stable device signature that survives cleared cookies."
   }));
 
-  /* ───── 4. Trackers & storage ───── */
+  /* 4 — WebGPU */
+  const gpu = adv.webgpu;
+  if (gpu){
+    const gpuRows = [];
+    if (!gpu.available){
+      gpuRows.push(kvRow("WebGPU adapter", "not available", "good"));
+    } else {
+      if (gpu.info){
+        if (gpu.info.vendor) gpuRows.push(kvRow("Vendor", gpu.info.vendor, "bad"));
+        if (gpu.info.architecture) gpuRows.push(kvRow("Architecture", gpu.info.architecture, "bad"));
+        if (gpu.info.device) gpuRows.push(kvRow("Device", gpu.info.device, "bad"));
+        if (gpu.info.description) gpuRows.push(kvRow("Description", gpu.info.description, "bad"));
+      }
+      gpuRows.push(kvRow("Features supported", String((gpu.features||[]).length)));
+    }
+    cards.push(findingCard({
+      name: "WebGPU adapter info",
+      status: gpu.available ? "warn" : "good",
+      open: gpu.available && !!gpu.info,
+      rows: gpuRows,
+      note: "WebGPU exposes the raw GPU vendor and device strings in Chromium, layering on top of WebGL's fingerprint."
+    }));
+  }
+
+  /* 5 — Authorized hardware */
+  const auth = adv.authorized || {};
+  const authRows = [];
+  authRows.push(kvRow("USB support", auth.usbSupported ? "yes" : "no", auth.usbSupported ? "warn" : "good"));
+  if (auth.usb.length) auth.usb.forEach(u => authRows.push(kvRow("USB device", (u.productName || "Unknown") + " (" + u.vendorId + ":" + u.productId + ")", "bad")));
+  authRows.push(kvRow("HID support", auth.hidSupported ? "yes" : "no", auth.hidSupported ? "warn" : "good"));
+  if (auth.hid.length) auth.hid.forEach(h => authRows.push(kvRow("HID device", (h.productName || "Unknown") + " (" + h.vendorId + ":" + h.productId + ")", "bad")));
+  authRows.push(kvRow("Serial support", auth.serialSupported ? "yes" : "no", auth.serialSupported ? "warn" : "good"));
+  if (auth.serial.length) auth.serial.forEach(() => authRows.push(kvRow("Serial port", "authorized", "bad")));
+  authRows.push(kvRow("Gamepad API", auth.gamepadSupported ? "yes" : "no"));
+  if (auth.gamepads.length) auth.gamepads.forEach(g => authRows.push(kvRow("Gamepad", g.id, "warn")));
+  authRows.push(kvRow("Bluetooth available", auth.bluetooth === null ? "unknown" : (auth.bluetooth ? "yes" : "no")));
+  cards.push(findingCard({
+    name: "Authorized hardware",
+    status: (auth.usb.length + auth.hid.length + auth.serial.length + auth.gamepads.length) > 0 ? "warn" : "good",
+    open: (auth.usb.length + auth.hid.length + auth.serial.length + auth.gamepads.length) > 0,
+    rows: authRows,
+    note: "Only devices you have already granted this page access to appear here. A site with permission to any of these can enumerate them on every visit."
+  }));
+
+  /* 6 — Trackers & storage */
   const storage = adv.storage || {};
   const perms = adv.permissions || {};
   const trackerRows = [
@@ -1737,26 +1660,16 @@ function renderResults(result){
     kvRow("Resources loaded", String((performance && performance.getEntriesByType) ? (performance.getEntriesByType("resource") || []).length : 0)),
     kvRow("Cookies enabled", navigator.cookieEnabled ? "yes" : "no", navigator.cookieEnabled ? "warn" : "good"),
     kvRow("Do Not Track", navigator.doNotTrack === "1" ? "enabled" : (navigator.doNotTrack || "not set")),
-    kvRow("Global Privacy Control", (navigator.globalPrivacyControl ? "enabled" : "not set")),
-    kvRow("Local Storage keys", (function(){ try{ return localStorage.length ? localStorage.length + " keys" : "empty"; }catch(e){ return "unavailable"; } })()),
-    kvRow("Session Storage keys", (function(){ try{ return sessionStorage.length ? sessionStorage.length + " keys" : "empty"; }catch(e){ return "unavailable"; } })())
+    kvRow("Global Privacy Control", (navigator.globalPrivacyControl ? "enabled" : "not set"))
   ];
   if (storage.estimate && storage.estimate.quota){
     trackerRows.push(kvRow("Storage used", b2mb(storage.estimate.usage) + " / " + b2gb(storage.estimate.quota)));
   }
-  if (storage.databases){
-    trackerRows.push(kvRow("IndexedDB databases", String(storage.databases.length)));
-  }
-  if (storage.caches){
-    trackerRows.push(kvRow("Cache API entries", String(storage.caches.length)));
-  }
-  if (storage.serviceWorkers){
-    trackerRows.push(kvRow("Service workers", String(storage.serviceWorkers.length)));
-  }
+  if (storage.databases) trackerRows.push(kvRow("IndexedDB databases", String(storage.databases.length)));
+  if (storage.caches) trackerRows.push(kvRow("Cache API entries", String(storage.caches.length)));
+  if (storage.serviceWorkers) trackerRows.push(kvRow("Service workers", String(storage.serviceWorkers.length)));
   const granted = Object.keys(perms).filter(k => perms[k] === "granted");
-  if (granted.length){
-    trackerRows.push(kvRow("Permissions granted", granted.join(", "), "warn"));
-  }
+  if (granted.length) trackerRows.push(kvRow("Permissions granted", granted.join(", "), "warn"));
   cards.push(findingCard({
     name: "Trackers, storage & permissions",
     status: statusFor(c.trackers.score, c.trackers.max),
@@ -1770,18 +1683,68 @@ function renderResults(result){
     noteCls: trackers.length ? "critical" : "good"
   }));
 
-  /* ───── 5. System & hardware ───── */
+  /* 7 — Storage & cookie keys for this origin */
+  const cookies = adv.cookies || [];
+  const sKeys = adv.storageKeys || { localStorage: [], sessionStorage: [] };
+  const keyRows = [];
+  keyRows.push(kvRow("Non-HttpOnly cookies", String(cookies.length), cookies.length ? "warn" : "good"));
+  cookies.slice(0, 12).forEach(c => keyRows.push(kvRow("Cookie name", c.name + " (" + c.valueLength + " B)", "warn")));
+  keyRows.push(kvRow("localStorage keys", String(sKeys.localStorage.length)));
+  sKeys.localStorage.slice(0, 12).forEach(k => keyRows.push(kvRow("localStorage key", k.key + " (" + k.valueLength + " B)", "warn")));
+  keyRows.push(kvRow("sessionStorage keys", String(sKeys.sessionStorage.length)));
+  sKeys.sessionStorage.slice(0, 12).forEach(k => keyRows.push(kvRow("sessionStorage key", k.key + " (" + k.valueLength + " B)", "warn")));
+  if (!cookies.length && !sKeys.localStorage.length && !sKeys.sessionStorage.length){
+    keyRows.push(kvRow("Storage footprint", "empty for this origin", "good"));
+  }
+  cards.push(findingCard({
+    name: "Cookies & storage on this origin",
+    status: "good",
+    open: (cookies.length + sKeys.localStorage.length + sKeys.sessionStorage.length) > 0,
+    rows: keyRows,
+    note: "Only non-HttpOnly cookies for this origin are readable by JavaScript. HttpOnly cookies and cookies for other sites are hidden — this is by design."
+  }));
+
+  /* 8 — Network & transport */
+  const conn = adv.connection;
+  const nav = adv.navigationTiming;
+  const netRows = [];
+  if (conn){
+    if (conn.effectiveType) netRows.push(kvRow("Effective connection", conn.effectiveType.toUpperCase(), "warn"));
+    if (conn.type) netRows.push(kvRow("Connection type", conn.type, "warn"));
+    if (conn.downlink !== null) netRows.push(kvRow("Estimated downlink", conn.downlink + " Mbps"));
+    if (conn.downlinkMax !== null) netRows.push(kvRow("Max downlink", conn.downlinkMax + " Mbps"));
+    if (conn.rtt !== null) netRows.push(kvRow("Round-trip time", conn.rtt + " ms"));
+    netRows.push(kvRow("Save-data", conn.saveData ? "on" : "off"));
+  } else {
+    netRows.push(kvRow("Network Information API", "unavailable", "good"));
+  }
+  if (nav){
+    netRows.push(kvRow("DNS lookup", nav.dns + " ms"));
+    netRows.push(kvRow("TCP connect", nav.tcp + " ms"));
+    if (nav.tls !== null) netRows.push(kvRow("TLS handshake", nav.tls + " ms"));
+    netRows.push(kvRow("Time to first byte", nav.ttfb + " ms"));
+    if (nav.protocol) netRows.push(kvRow("Protocol", nav.protocol));
+    if (nav.redirects) netRows.push(kvRow("Redirects", String(nav.redirects)));
+    if (nav.transferSize) netRows.push(kvRow("Page transfer size", b2mb(nav.transferSize)));
+  }
+  cards.push(findingCard({
+    name: "Network & transport",
+    status: "good",
+    open: false,
+    rows: netRows,
+    note: "DNS, TCP, TLS and RTT timings together can be used to narrow down your geographic region — even behind a VPN — by triangulating against known server latencies."
+  }));
+
+  /* 9 — System */
   const sys = d.system || {};
   const battery = adv.battery;
-  const conn = adv.connection;
   const intl = adv.intl || {};
   const sysRows = [
     kvRow("User agent", sys.ua || "—"),
     kvRow("Platform", sys.platform || "—", "plain"),
     kvRow("Languages", (sys.languages && sys.languages.length) ? sys.languages.join(", ") : "—"),
     kvRow("Timezone", sys.timezone || "—"),
-    kvRow("Timezone (Intl)", intl.timeZone || "—"),
-    kvRow("Locale", intl.locale || "—"),
+    kvRow("Locale (Intl)", intl.locale || "—"),
     kvRow("Calendar", intl.calendar || "—"),
     kvRow("Numbering system", intl.numberingSystem || "—"),
     kvRow("Currency (default)", intl.currency || "—"),
@@ -1794,14 +1757,6 @@ function renderResults(result){
     kvRow("Touch points", String(sys.maxTouchPoints || 0))
   ];
   if (battery) sysRows.push(kvRow("Battery", battery.level + "%" + (battery.charging ? " (charging)" : ""), "warn"));
-  if (conn){
-    const parts = [];
-    if (conn.effectiveType) parts.push(conn.effectiveType.toUpperCase());
-    if (conn.downlink !== null) parts.push(conn.downlink + " Mbps");
-    if (conn.rtt !== null) parts.push(conn.rtt + " ms RTT");
-    if (conn.saveData) parts.push("save-data");
-    if (parts.length) sysRows.push(kvRow("Network class", parts.join(" · "), "warn"));
-  }
   const ch = adv.clientHints;
   if (ch && ch.high){
     if (ch.high.architecture) sysRows.push(kvRow("CPU architecture", ch.high.architecture + (ch.high.bitness ? " " + ch.high.bitness + "-bit" : ""), "bad"));
@@ -1810,9 +1765,11 @@ function renderResults(result){
   }
   if (adv.audioPipeline){
     const ap = adv.audioPipeline;
-    sysRows.push(kvRow("Audio sample rate", ap.sampleRate ? ap.sampleRate + " Hz" : "—"));
+    if (ap.sampleRate) sysRows.push(kvRow("Audio sample rate", ap.sampleRate + " Hz"));
     if (ap.baseLatency) sysRows.push(kvRow("Audio base latency", (ap.baseLatency * 1000).toFixed(2) + " ms"));
   }
+  const math = adv.mathPrecision;
+  if (math) sysRows.push(kvRow("JS timer precision", math.precision + " (" + math.loopMs + " ms loop)"));
   cards.push(findingCard({
     name: "System, hardware & locale",
     status: statusFor(c.system.score, c.system.max),
@@ -1821,13 +1778,12 @@ function renderResults(result){
     note: "Individually these look harmless. Together — screen + cores + memory + timezone + locale + battery — they pin you to a very small population."
   }));
 
-  /* ───── 6. Media, codecs, voices ───── */
+  /* 10 — Media & codecs */
   const codecs = adv.codecs || { video: [], audio: [] };
   const voices = adv.voices || [];
-  const audioPipe = adv.audioPipeline || {};
   const codecRows = [];
   if (codecs.video.length) codecs.video.forEach(x => codecRows.push(kvRow("Video — " + x.label, x.support, "plain")));
-  if (codecs.audio.length) codecRows.push(...codecs.audio.map(x => kvRow("Audio — " + x.label, x.support, "plain")));
+  if (codecs.audio.length) codecs.audio.forEach(x => codecRows.push(kvRow("Audio — " + x.label, x.support, "plain")));
   codecRows.push(kvRow("Speech voices installed", String(voices.length), voices.length ? "warn" : ""));
   if (voices.length) codecRows.push(kvRow("Sample voices", voices.slice(0, 4).map(v => v.name).join(", ")));
   cards.push(findingCard({
@@ -1837,34 +1793,26 @@ function renderResults(result){
     note: "Installed codecs and speech-synthesis voices fingerprint the OS distribution and can narrow your device model."
   }));
 
-  /* ───── 7. Browser surface & features ───── */
+  /* 11 — Browser surface */
   const bs = adv.browserSurface || { plugins: [], mimeTypes: [] };
   const feat = adv.features || { checks: {}, mediaQueries: {} };
   const pluginRows = [
     kvRow("Plugins", String(bs.plugins.length)),
     kvRow("MIME types", String(bs.mimeTypes.length))
   ];
-  if (bs.plugins.length){
-    pluginRows.push(...bs.plugins.slice(0, 8).map(p => kvRow("Plugin", p.name, "plain")));
-  }
+  if (bs.plugins.length) bs.plugins.slice(0, 8).forEach(p => pluginRows.push(kvRow("Plugin", p.name, "plain")));
   const activeChecks = Object.keys(feat.checks).filter(k => feat.checks[k]);
   pluginRows.push(kvRow("Supported APIs", String(activeChecks.length)));
-  pluginRows.push(kvRow("Hardened signals", (function(){
-    const signals = [];
-    if (!feat.checks.webgpu) signals.push("no WebGPU");
-    if (!feat.checks.bluetooth) signals.push("no Bluetooth");
-    if (!feat.checks.usb) signals.push("no USB");
-    if (!feat.checks.serial) signals.push("no Serial");
-    return signals.length ? signals.join(", ") : "none";
-  })(), "good"));
+  const mq = feat.mediaQueries || {};
+  Object.keys(mq).forEach(k => pluginRows.push(kvRow("MQ " + k, mq[k] ? "yes" : "no", "plain")));
   cards.push(findingCard({
     name: "Browser surface & feature support",
     status: "good",
     rows: pluginRows,
-    note: "The exact set of plugins, MIME types, and Web APIs a browser advertises is itself a fingerprint — hardened browsers deliberately advertise less."
+    note: "The exact set of plugins, MIME types, Web APIs and CSS media queries a browser answers to is itself a fingerprint — hardened browsers deliberately advertise less."
   }));
 
-  /* ───── 8. DNS ───── */
+  /* 12 — DNS */
   const dns = d.dns || {};
   const dnsRows = Object.keys(dns).map(name => {
     const item = dns[name];
@@ -1879,7 +1827,7 @@ function renderResults(result){
     note: "Three independent DoH resolvers were queried. A mismatch between them indicates a hijacked or intercepted resolver on your network."
   }));
 
-  /* ───── 9. Privacy-tool detection ───── */
+  /* 13 — Tampering */
   const signals = detectPrivacyTools(d.webgl, d.advanced);
   if (signals.length){
     cards.push(findingCard({
@@ -1890,12 +1838,31 @@ function renderResults(result){
     }));
   }
 
+  /* 14 — What browsers refuse to reveal (educational) */
+  cards.push(findingCard({
+    name: "What browsers refuse to reveal (and why)",
+    info: true,
+    open: false,
+    rows: [
+      kvRow("Saved passwords", "Blocked — password manager sandbox", "good"),
+      kvRow("Saved emails / autofill", "Blocked — no API exists", "good"),
+      kvRow("MAC addresses (yours)", "Not exposed — layer-2 is stripped", "good"),
+      kvRow("MAC addresses (other devices)", "Impossible — never reaches the browser", "good"),
+      kvRow("Other devices on your LAN", "No API — page cannot enumerate", "good"),
+      kvRow("Files on your disk", "Blocked — sandboxed file system", "good"),
+      kvRow("Browser history of other sites", "Blocked — origin-isolated", "good"),
+      kvRow("Contents of other tabs", "Blocked — origin-isolated", "good"),
+      kvRow("OS keychain / credentials", "Blocked — native-only", "good"),
+      kvRow("HttpOnly cookies", "Hidden from JavaScript by design", "good")
+    ],
+    note: "These protections are why a webpage cannot steal your saved passwords or scan your local network — no matter what a tool claims. To check if your email or passwords appeared in known breaches, use haveibeenpwned.com, or your browser's built-in password manager (chrome://password-manager, about:logins).",
+    noteCls: "info"
+  }));
+
   $("findings").innerHTML = cards.filter(Boolean).join("");
 
-  /* Raw JSON */
-  try{
-    $("rawJSON").textContent = JSON.stringify(result, null, 2);
-  }catch(e){ $("rawJSON").textContent = "{}"; }
+  try{ $("rawJSON").textContent = JSON.stringify(result, null, 2); }
+  catch(e){ $("rawJSON").textContent = "{}"; }
 }
 
 function showRunningState(){
@@ -1909,9 +1876,7 @@ function showResultsState(){
   $("scanResults").hidden = false;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ORCHESTRATOR
-   ═══════════════════════════════════════════════════════════ */
+/* ═══════ ORCHESTRATOR ═══════ */
 async function runFullScan(){
   if (scanning) return;
   scanning = true;
@@ -1920,30 +1885,35 @@ async function runFullScan(){
   const result = { time: Date.now(), score: 0, categories: null, details: {} };
 
   try{
-    setStage(5, "Resolving public IP and geolocation…");
+    setStage(4, "Resolving public IP and geolocation…");
     result.details.ip = await getIpAndGeo();
 
-    setStage(15, "Fingerprinting via FingerprintJS…");
+    setStage(12, "Fingerprinting via FingerprintJS…");
     result.details.fingerprint = await runFingerprint();
 
-    setStage(24, "Hashing canvas output…");
+    setStage(20, "Hashing canvas output…");
     result.details.canvas = await canvasHash();
 
-    setStage(32, "Hashing audio pipeline…");
+    setStage(27, "Hashing audio pipeline…");
     result.details.audio = await audioHash();
 
-    setStage(42, "Extracting WebGL, fonts, codecs, hardware…");
+    setStage(38, "Extracting WebGL, fonts, codecs, hardware…");
     result.details.advanced = await collectAdvanced();
     result.details.webgl = result.details.advanced.webgl;
 
-    setStage(58, "Probing WebRTC for local leaks…");
+    setStage(54, "Probing WebRTC for local leaks…");
     result.details.webrtc = await checkWebrtcCandidates(2200);
 
-    setStage(70, "Scanning loaded resources for trackers…");
+    setStage(66, "Scanning loaded resources for trackers…");
     result.details.trackers = scanTrackers();
 
-    setStage(82, "Querying three DoH resolvers…");
+    setStage(76, "Querying three DoH resolvers…");
     result.details.dns = await dohLookup("example.com");
+
+    setStage(86, "Reading cookies, storage keys, network timing…");
+    /* already collected in advanced, but add a small delay so the progress
+       bar shows real work. Feels intentional and lets the browser settle. */
+    await new Promise(r => setTimeout(r, 250));
 
     setStage(92, "Collecting system & locale…");
     try{

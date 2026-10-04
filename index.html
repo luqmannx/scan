@@ -1,1593 +1,2092 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Are you anonymous? </title>
-   <link rel="icon" href="assets/logo.png" type="image/x-icon">
-
-  <!-- Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js" defer></script>
-
-  <style>
-    :root {
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --accent: #3b82f6;
-      --accent-dark: #2563eb;
-      --good: #10b981;
-      --warn: #f59e0b;
-      --bad: #ef4444;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --text: #0f172a;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      --radius: 12px;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-      line-height: 1.5;
-      font-size: 16px; /* Base font size for better mobile readability */
-    }
-
-    .wrap {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-
-    header {
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    h1 {
-      font-size: 1.5rem;
-      margin: 0 0 4px 0;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .tagline {
-      font-size: 0.875rem;
-      color: var(--muted);
-      max-width: 600px;
-    }
-
-    .controls {
-      margin-left: auto;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    button {
-      background: var(--accent);
-      color: white;
-      border: 0;
-      padding: 12px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 0.875rem;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      min-height: 44px; /* Better touch targets */
-    }
-
-    button:hover {
-      background: var(--accent-dark);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow);
-    }
-
-    button:active {
-      transform: translateY(0);
-    }
-
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .cfg {
-      background: transparent;
-      color: var(--accent);
-      border: 1px solid var(--border);
-    }
-
-    .cfg:hover {
-      background: var(--bg);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 16px;
-      margin-top: 20px;
-    }
-
-    .card {
-      background: var(--card);
-      padding: 20px;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-    }
-
-    .card-title {
-      font-size: 1.125rem;
-      font-weight: 600;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .small {
-      font-size: 0.8125rem;
-      color: var(--muted);
-      line-height: 1.4;
-    }
-
-    .muted {
-      color: var(--muted);
-    }
-
-    .progress {
-      height: 10px;
-      background: #e2e8f0;
-      border-radius: 999px;
-      overflow: hidden;
-      margin-top: 12px;
-    }
-
-    .progress > i {
-      display: block;
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), #7c3aed);
-      width: 0;
-      transition: width 0.3s ease;
-    }
-
-    .row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-      flex-wrap: wrap;
-    }
-
-    .row:last-child {
-      border-bottom: none;
-    }
-
-    details {
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    details summary {
-      cursor: pointer;
-      padding: 12px 0;
-      font-weight: 600;
-      list-style: none;
-      position: relative;
-      display: flex;
-      align-items: center;
-      min-height: 44px; /* Better touch targets */
-    }
-
-    details summary::-webkit-details-marker {
-      display: none;
-    }
-
-    details summary:after {
-      content: '+';
-      position: absolute;
-      right: 0;
-      font-size: 1.2rem;
-      transition: transform 0.2s;
-    }
-
-    details[open] summary:after {
-      content: '-';
-    }
-
-    pre {
-      background: #0f172a;
-      color: #e2e8f0;
-      padding: 16px;
-      border-radius: 8px;
-      overflow: auto;
-      font-size: 0.8125rem;
-      line-height: 1.4;
-      margin-top: 12px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      font-size: 0.875rem;
-      transition: border-color 0.2s;
-      min-height: 44px; /* Better touch targets */
-    }
-
-    input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    .status-good {
-      color: var(--good);
-    }
-
-    .status-warn {
-      color: var(--warn);
-    }
-
-    .status-bad {
-      color: var(--bad);
-    }
-
-    .score-display {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 16px;
-      flex-direction: column;
-    }
-
-    .score-value {
-      font-size: 2rem;
-      font-weight: 800;
-      line-height: 1;
-    }
-
-    .history-item {
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .history-item:last-child {
-      border-bottom: none;
-    }
-
-    .history-item .time {
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .history-item .score {
-      font-size: 0.875rem;
-      color: var(--muted);
-    }
-
-    .history-item button {
-      padding: 8px 12px;
-      font-size: 0.75rem;
-    }
-
-    footer {
-      margin-top: 32px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
-    }
-
-    .loading {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 1s ease-in-out infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Chart container with centered text */
-    .chart-container {
-      position: relative;
-      width: 120px;
-      height: 120px;
-    }
-
-    .chart-center-text {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-    }
-
-    .chart-score {
-      font-size: 1.6rem;
-      font-weight: 800;
-      line-height: 1;
-    }
-
-    .chart-label {
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    /* Modal styles */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 20px;
-    }
-
-    .modal {
-      background: white;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      max-width: 500px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    .modal-header {
-      padding: 20px 20px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .modal-body {
-      padding: 20px;
-    }
-
-    .modal-footer {
-      padding: 0 20px 20px;
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-    }
-
-    .modal-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .step-guide {
-      margin-top: 20px;
-    }
-
-    .step {
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .step:last-child {
-      border-bottom: none;
-      margin-bottom: 0;
-    }
-
-    .step-number {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      background: var(--accent);
-      color: white;
-      border-radius: 50%;
-      font-weight: 600;
-      margin-right: 8px;
-    }
-
-    .step-title {
-      font-weight: 600;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-    }
-
-    .step-content {
-      margin-left: 36px;
-    }
-
-    .step-content ul {
-      padding-left: 20px;
-      margin-top: 8px;
-    }
-
-    .step-content li {
-      margin-bottom: 4px;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 4px 8px;
-      background: var(--accent);
-      color: white;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      margin-left: 8px;
-    }
-
-    .badge-easy {
-      background: var(--good);
-    }
-
-    .badge-medium {
-      background: var(--warn);
-    }
-
-    .badge-hard {
-      background: var(--bad);
-    }
-
-    /* Full page modal styles */
-    .full-page-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--bg);
-      z-index: 2000;
-      overflow-y: auto;
-      padding: 0;
-      margin: 0;
-    }
-
-    .full-page-modal .modal-content {
-      max-width: 100%;
-      height: 100%;
-      overflow-y: auto;
-      padding: 20px;
-    }
-
-    .full-page-modal .modal-header {
-      position: sticky;
-      top: 0;
-      background: var(--bg);
-      z-index: 10;
-      padding: 20px 0;
-      margin-bottom: 20px;
-    }
-
-    .full-page-modal .modal-body {
-      padding: 0;
-    }
-
-    .full-page-modal .modal-footer {
-      position: sticky;
-      bottom: 0;
-      background: var(--bg);
-      z-index: 10;
-      padding: 20px 0;
-      margin-top: 20px;
-    }
-
-    /* Mobile-first responsive design */
-    @media (min-width: 640px) {
-      .wrap {
-        padding: 20px;
-      }
-      
-      .grid {
-        grid-template-columns: 380px 1fr;
-        gap: 20px;
-      }
-      
-      .score-display {
-        flex-direction: row;
-      }
-      
-      .modal-footer {
-        flex-direction: row;
-      }
-      
-      header {
-        flex-direction: row;
-        align-items: flex-start;
-      }
-      
-      .controls {
-        margin-left: auto;
-      }
-      
-      button {
-        flex: none;
-      }
-    }
-
-    @media (max-width: 639px) {
-      .wrap {
-        padding: 12px;
-      }
-      
-      .card {
-        padding: 16px;
-      }
-      
-      .modal-overlay {
-        padding: 10px;
-      }
-      
-      .modal {
-        max-height: 95vh;
-      }
-      
-      .modal-footer {
-        flex-direction: column;
-      }
-      
-      .step-title {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-      }
-      
-      .badge {
-        margin-left: 0;
-      }
-    }
-
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 1.25rem;
-      }
-      
-      .card-title {
-        font-size: 1rem;
-      }
-      
-      .chart-container {
-        width: 100px;
-        height: 100px;
-      }
-      
-      .chart-score {
-        font-size: 1.4rem;
-      }
-      
-      .score-value {
-        font-size: 1.75rem;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="A client-side privacy audit — every signal your browser exposes.">
+<title>Are you anonymous?</title>
+
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem('vibex-theme');
+    if(t !== 'light' && t !== 'dark'){ t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
+    document.documentElement.setAttribute('data-theme', t);
+  }catch(e){ document.documentElement.setAttribute('data-theme','dark'); }
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js" defer></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --font-sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Inter,"Segoe UI",Roboto,sans-serif;
+  --font-display:"Bricolage Grotesque",-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:980px;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --nav-h:56px;
+  --text:#f5f5f7; --text-2:rgba(245,245,247,.72); --text-3:rgba(245,245,247,.48); --text-4:rgba(245,245,247,.30);
+  --surface:rgba(255,255,255,.05); --surface-hi:rgba(255,255,255,.09);
+  --border:rgba(255,255,255,.10); --border-hi:rgba(255,255,255,.20);
+  --nav-bg:rgba(8,9,12,.72); --nav-line:rgba(255,255,255,.07); --nav-hover:#fff;
+  --glass-bg:rgba(20,21,26,.82); --glass-border:rgba(255,255,255,.12);
+  --glass-shadow:0 32px 90px rgba(0,0,0,.6); --glass-inset:inset 0 1px 0 rgba(255,255,255,.06);
+  --backdrop:rgba(0,0,0,.55);
+  --chip-bg:rgba(255,255,255,.08);
+  --track-bg:rgba(255,255,255,.09);
+  --bar-from:rgba(255,255,255,.55); --bar-to:#fff;
+  --hero-em-from:#fff; --hero-em-to:#a9adbd;
+  --btn-primary-bg:#fff; --btn-primary-fg:#000; --btn-primary-border:#fff;
+  --btn-primary-bg-hover:#f2f2f7; --btn-primary-border-hover:#f2f2f7;
+  --btn-shadow:rgba(255,255,255,.10); --btn-shadow-hover:rgba(255,255,255,.16);
+  --body-glow-1:rgba(110,132,255,.10); --body-glow-2:rgba(255,255,255,.03); --body-base:#000;
+  --ok:#30d158; --warn:#ffd60a; --err:#ff453a;
+  --ok-bg:rgba(48,209,88,.14); --warn-bg:rgba(255,214,10,.14); --err-bg:rgba(255,69,58,.14);
+}
+html[data-theme="light"]{
+  --text:#1d1d1f; --text-2:rgba(29,29,31,.72); --text-3:rgba(29,29,31,.55); --text-4:rgba(29,29,31,.36);
+  --surface:rgba(0,0,0,.04); --surface-hi:rgba(0,0,0,.08);
+  --border:rgba(0,0,0,.10); --border-hi:rgba(0,0,0,.20);
+  --nav-bg:rgba(251,251,253,.78); --nav-line:rgba(0,0,0,.06); --nav-hover:#1d1d1f;
+  --glass-bg:rgba(255,255,255,.88); --glass-border:rgba(0,0,0,.08);
+  --glass-shadow:0 32px 90px rgba(0,0,0,.16); --glass-inset:inset 0 1px 0 rgba(255,255,255,.9);
+  --backdrop:rgba(20,20,24,.28);
+  --chip-bg:rgba(0,0,0,.06);
+  --track-bg:rgba(0,0,0,.08);
+  --bar-from:rgba(0,0,0,.40); --bar-to:#1d1d1f;
+  --hero-em-from:#1d1d1f; --hero-em-to:#6e6e73;
+  --btn-primary-bg:#1d1d1f; --btn-primary-fg:#fff; --btn-primary-border:#1d1d1f;
+  --btn-primary-bg-hover:#2d2d2f; --btn-primary-border-hover:#2d2d2f;
+  --btn-shadow:rgba(0,0,0,.08); --btn-shadow-hover:rgba(0,0,0,.14);
+  --body-glow-1:rgba(110,132,255,.12); --body-glow-2:rgba(0,0,0,.02); --body-base:#fbfbfd;
+  --ok:#248a3d; --warn:#b25e00; --err:#d70015;
+  --ok-bg:rgba(36,138,61,.12); --warn-bg:rgba(178,94,0,.12); --err-bg:rgba(215,0,21,.10);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{ -webkit-text-size-adjust:100%; scroll-behavior:smooth; }
+body{
+  min-height:100vh; min-height:100svh; display:flex; flex-direction:column;
+  position:relative; overflow-x:hidden;
+  color:var(--text); font-family:var(--font-sans);
+  font-size:16px; line-height:1.5; letter-spacing:-.011em;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  background:
+    radial-gradient(75% 50% at 50% -8%,var(--body-glow-1),transparent 65%),
+    radial-gradient(45% 35% at 88% 105%,var(--body-glow-2),transparent 70%),
+    var(--body-base);
+  transition:background-color .35s var(--ease),color .35s var(--ease);
+}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+svg{display:block}
+:focus-visible{ outline:2px solid var(--text-4); outline-offset:3px; border-radius:4px; }
+
+#particleCanvas{
+  position:fixed; top:0; left:0; width:100vw; height:100vh;
+  z-index:2; pointer-events:none; background:transparent; display:block !important;
+}
+
+/* ═══════ NAV ═══════ */
+nav{
+  position:fixed; inset:0 0 auto 0; z-index:100; height:var(--nav-h);
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding-left:max(20px,env(safe-area-inset-left));
+  padding-right:max(20px,env(safe-area-inset-right));
+  background:var(--nav-bg);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  backdrop-filter:saturate(180%) blur(20px);
+  border-bottom:1px solid var(--nav-line);
+}
+.logo{ display:block; font-size:17px; font-weight:600; letter-spacing:-.03em; line-height:1.1; color:var(--text); flex-shrink:0; }
+.logo small{ display:block; margin-top:1px; font-size:9.5px; font-weight:500; letter-spacing:.14em; text-transform:uppercase; color:var(--text-4); }
+.nav-right{ display:flex; align-items:center; gap:22px; }
+.nav-links{ display:flex; align-items:center; gap:26px; }
+.nav-links button{
+  position:relative; padding:8px 0; font-size:13px; font-weight:500;
+  letter-spacing:-.01em; color:var(--text-3);
+  transition:color .5s var(--ease); white-space:nowrap;
+}
+.nav-links button::after{
+  content:""; position:absolute; left:0; bottom:2px; width:0; height:1.5px;
+  background:var(--nav-hover); border-radius:2px;
+  transition:width 1.2s cubic-bezier(.22,1,.36,1);
+}
+.nav-links button:hover{ color:var(--nav-hover); }
+.nav-links button:hover::after{ width:100%; }
+.theme-toggle{
+  position:relative; display:grid; place-items:center;
+  width:34px;height:34px; flex-shrink:0; border-radius:50%;
+  border:1px solid var(--border); background:var(--surface); color:var(--text-3);
+  transition:background .22s var(--ease),color .22s var(--ease),border-color .22s var(--ease),transform .22s var(--ease);
+}
+.theme-toggle:hover{ background:var(--surface-hi); border-color:var(--border-hi); color:var(--text); transform:scale(1.06); }
+.theme-toggle:active{transform:scale(.94)}
+.theme-toggle svg{position:absolute;transition:opacity .34s var(--ease),transform .34s var(--ease);}
+.theme-toggle .icon-sun{ opacity:0; transform:rotate(-90deg) scale(.5); }
+.theme-toggle .icon-moon{ opacity:1; transform:rotate(0deg) scale(1); }
+html[data-theme="dark"] .theme-toggle .icon-sun{ opacity:1; transform:rotate(0deg) scale(1); }
+html[data-theme="dark"] .theme-toggle .icon-moon{ opacity:0; transform:rotate(90deg) scale(.5); }
+
+/* ═══════ HERO ═══════ */
+#hero{
+  position:relative; z-index:10; flex:1;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:calc(var(--nav-h) + 9vh) 22px 9vh;
+}
+.hero-title{
+  font-family:var(--font-display);
+  font-size:clamp(2.75rem,8.5vw,5rem);
+  font-weight:700; line-height:1.0; letter-spacing:-.038em;
+  text-wrap:balance; color:var(--text);
+  animation:rise .7s var(--ease) both;
+}
+.hero-title em{
+  font-style:normal;
+  background:linear-gradient(178deg,var(--hero-em-from) 8%,var(--hero-em-to) 100%);
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent; color:transparent;
+}
+.hero-sub{
+  max-width:620px; margin-top:22px;
+  font-size:clamp(15px,1.15vw,17px); line-height:1.55; letter-spacing:-.012em;
+  color:var(--text-3); text-wrap:pretty;
+  animation:rise .7s .1s var(--ease) both;
+}
+.cta{ display:flex; align-items:center; justify-content:center; gap:12px; margin-top:40px; animation:rise .7s .16s var(--ease) both; }
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  height:50px; padding:0 30px; border-radius:var(--r-pill);
+  font-size:16px; font-weight:600; letter-spacing:-.015em; white-space:nowrap;
+  transition:background .25s var(--ease),color .25s var(--ease),border-color .25s var(--ease),transform .18s var(--ease),box-shadow .25s var(--ease);
+  -webkit-tap-highlight-color:transparent;
+}
+.btn:active{transform:scale(.97)}
+.btn-primary{ background:var(--btn-primary-bg); color:var(--btn-primary-fg); border:1px solid var(--btn-primary-border); box-shadow:0 6px 24px var(--btn-shadow); }
+.btn-primary:hover{ background:var(--btn-primary-bg-hover); border-color:var(--btn-primary-border-hover); box-shadow:0 8px 30px var(--btn-shadow-hover); }
+.btn-ghost{
+  background:var(--surface); color:var(--text-2); border:1px solid var(--border);
+  -webkit-backdrop-filter:blur(16px) saturate(150%); backdrop-filter:blur(16px) saturate(150%);
+}
+.btn-ghost:hover{ background:var(--surface-hi); border-color:var(--border-hi); color:var(--text); }
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══════ MODAL SHELL ═══════ */
+.modal-backdrop,.info-backdrop{
+  position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+  padding:20px; background:var(--backdrop);
+  -webkit-backdrop-filter:saturate(120%) blur(18px); backdrop-filter:saturate(120%) blur(18px);
+  opacity:0; pointer-events:none;
+  transition:opacity .3s var(--ease);
+}
+.modal-backdrop{z-index:200}
+.info-backdrop{z-index:250}
+.modal-backdrop.is-open,.info-backdrop.is-open{opacity:1;pointer-events:auto}
+
+.modal{
+  width:min(500px,100%); max-height:min(86vh,760px);
+  display:flex; flex-direction:column;
+  border:1px solid var(--glass-border); border-radius:var(--r-xl);
+  background:var(--glass-bg);
+  -webkit-backdrop-filter:saturate(180%) blur(28px); backdrop-filter:saturate(180%) blur(28px);
+  box-shadow:var(--glass-shadow),var(--glass-inset);
+  transform:scale(.96) translateY(14px);
+  transition:transform .38s var(--ease);
+  overflow:hidden;
+}
+.modal-backdrop.is-open .modal{transform:scale(1) translateY(0)}
+.modal--wide{ width:min(1040px,100%); max-height:min(92vh,900px); }
+
+.modal-header{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 16px 0; flex-shrink:0; }
+.modal-head-title{ display:flex; align-items:center; gap:9px; padding-left:6px; font-size:14px; font-weight:600; letter-spacing:-.02em; color:var(--text); }
+.modal-head-title .dot{ width:7px;height:7px;border-radius:50%; background:var(--ok); box-shadow:0 0 0 0 var(--ok-bg); animation:pulse 2.2s var(--ease) infinite; }
+@keyframes pulse{0%{box-shadow:0 0 0 0 var(--ok-bg)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+
+.icon-btn{
+  display:grid; place-items:center; width:32px;height:32px; flex-shrink:0;
+  border-radius:50%; border:1px solid var(--border);
+  background:var(--surface); color:var(--text-3);
+  transition:background .2s var(--ease),color .2s var(--ease),border-color .2s var(--ease),transform .2s var(--ease);
+}
+.icon-btn:hover{background:var(--surface-hi);border-color:var(--border-hi);color:var(--text);transform:scale(1.06)}
+
+.modal-body{ padding:20px 22px calc(24px + env(safe-area-inset-bottom)); overflow-y:auto; overscroll-behavior:contain; }
+
+/* ═══════ SCAN RUNNING ═══════ */
+.scan-stage{ display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:54px 16px 60px; }
+.scan-orb{ position:relative; width:86px;height:86px; margin-bottom:28px; }
+.scan-orb i{ position:absolute; inset:0; border-radius:50%; border:1.5px solid var(--border); }
+.scan-orb i:nth-child(1){ animation:orbSpin 2.6s linear infinite; border-top-color:var(--text-2); }
+.scan-orb i:nth-child(2){ inset:12px; animation:orbSpin 1.9s linear infinite reverse; border-bottom-color:var(--text-3); }
+.scan-orb i:nth-child(3){ inset:24px; animation:orbSpin 1.4s linear infinite; border-left-color:var(--text-3); }
+.scan-orb::after{ content:""; position:absolute; inset:34px; border-radius:50%; background:var(--text-2); animation:orbGlow 1.8s var(--ease) infinite; }
+@keyframes orbSpin{to{transform:rotate(360deg)}}
+@keyframes orbGlow{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
+.scan-stage-title{ font-family:var(--font-display); font-size:22px; font-weight:700; letter-spacing:-.03em; color:var(--text); }
+.scan-stage-sub{ margin-top:6px; font-size:13px; color:var(--text-4); }
+.track{ height:3px; width:min(360px,100%); margin-top:30px; border-radius:var(--r-pill); background:var(--track-bg); overflow:hidden; }
+.track i{ display:block; height:100%; width:0%; border-radius:var(--r-pill); background:linear-gradient(90deg,var(--bar-from),var(--bar-to)); transition:width .35s var(--ease); }
+.status{ margin-top:11px; font-size:11.5px; letter-spacing:.01em; color:var(--text-4); min-height:16px; }
+
+/* ═══════ SCAN RESULTS ═══════ */
+#scanResults[hidden]{display:none}
+
+.score-hero{
+  display:flex; align-items:stretch; gap:26px; flex-wrap:wrap;
+  padding:22px 22px 24px; margin-bottom:22px;
+  border:1px solid var(--border); border-radius:var(--r-lg);
+  background: radial-gradient(120% 100% at 0% 0%,var(--surface-hi),transparent 60%), var(--surface);
+}
+.score-ring{ position:relative; width:150px; height:150px; flex-shrink:0; }
+.score-ring canvas{ display:block; width:150px !important; height:150px !important; }
+.score-center{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; pointer-events:none; }
+.score-num{ font-family:var(--font-display); font-size:40px; font-weight:700; letter-spacing:-.048em; line-height:1; color:var(--text); font-variant-numeric:tabular-nums; }
+.score-lbl{ font-size:9.5px; font-weight:600; letter-spacing:.15em; text-transform:uppercase; color:var(--text-4); }
+.score-meta{ flex:1; min-width:240px; display:flex; flex-direction:column; justify-content:center; }
+.score-verdict{ font-family:var(--font-display); font-size:26px; font-weight:700; letter-spacing:-.034em; line-height:1.15; color:var(--text); }
+.score-sub{ margin-top:8px; max-width:560px; font-size:13.5px; line-height:1.55; color:var(--text-3); }
+
+.score-stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; margin-top:20px; width:100%; }
+.stat{ padding:12px 14px; border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface); }
+.stat .stat-num{ font-family:var(--font-display); font-size:20px; font-weight:700; letter-spacing:-.032em; line-height:1; color:var(--text); font-variant-numeric:tabular-nums; }
+.stat .stat-lbl{ margin-top:4px; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text-4); }
+.stat.danger{ border-color:var(--err); background:var(--err-bg); }
+.stat.danger .stat-num{ color:var(--err); }
+
+.score-actions{ display:flex; gap:9px; margin-top:22px; flex-wrap:wrap; }
+.btn-sm{
+  height:38px; padding:0 18px; border-radius:var(--r-pill);
+  font-size:13px; font-weight:600; letter-spacing:-.01em;
+  display:inline-flex; align-items:center; gap:7px;
+  transition:background .22s var(--ease),color .22s var(--ease),border-color .22s var(--ease),transform .18s var(--ease);
+}
+.btn-sm:active{transform:scale(.97)}
+.btn-sm.solid{ background:var(--btn-primary-bg); color:var(--btn-primary-fg); border:1px solid var(--btn-primary-border); }
+.btn-sm.solid:hover{background:var(--btn-primary-bg-hover);border-color:var(--btn-primary-border-hover)}
+.btn-sm.line{ background:var(--surface); color:var(--text-3); border:1px solid var(--border); }
+.btn-sm.line:hover{background:var(--surface-hi);border-color:var(--border-hi);color:var(--text)}
+
+.critical-banner{
+  display:none; align-items:center; gap:12px;
+  padding:14px 18px; margin-bottom:22px;
+  border:1px solid var(--err); border-radius:var(--r-md);
+  background:var(--err-bg); color:var(--err);
+  font-size:13px; font-weight:600; letter-spacing:-.012em;
+}
+.critical-banner.is-on{display:flex}
+.critical-banner svg{flex-shrink:0}
+
+/* Findings */
+.findings{ display:grid; gap:9px; }
+.finding{ border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface); overflow:hidden; transition:border-color .22s var(--ease),background .22s var(--ease); }
+.finding[open]{ border-color:var(--border-hi); }
+.finding.danger{ border-color:var(--err); }
+.finding.danger[open]{ border-color:var(--err); background:var(--err-bg); }
+.finding > summary{
+  display:flex; align-items:center; gap:12px; padding:15px 17px; cursor:pointer; list-style:none;
+  font-size:13.5px; font-weight:600; letter-spacing:-.012em; color:var(--text);
+  -webkit-tap-highlight-color:transparent;
+}
+.finding > summary::-webkit-details-marker{display:none}
+.finding > summary::marker{content:""}
+.f-dot{ width:7px;height:7px;border-radius:50%; flex-shrink:0; background:var(--text-4); }
+.f-dot.good{background:var(--ok);box-shadow:0 0 0 4px var(--ok-bg)}
+.f-dot.warn{background:var(--warn);box-shadow:0 0 0 4px var(--warn-bg)}
+.f-dot.bad{background:var(--err);box-shadow:0 0 0 4px var(--err-bg)}
+.f-name{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.f-status{
+  font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  padding:4px 10px; border-radius:999px; flex-shrink:0;
+  background:var(--chip-bg); color:var(--text-4);
+}
+.f-status.good{color:var(--ok);background:var(--ok-bg)}
+.f-status.warn{color:var(--warn);background:var(--warn-bg)}
+.f-status.bad{color:var(--err);background:var(--err-bg)}
+.f-chev{ flex-shrink:0; color:var(--text-4); transition:transform .28s var(--ease),color .22s var(--ease); }
+.finding[open] .f-chev{transform:rotate(180deg);color:var(--text-2)}
+.f-body{ padding:4px 17px 17px; border-top:1px solid var(--border); }
+
+.kv{ display:flex; align-items:flex-start; justify-content:space-between; gap:18px; padding:9px 0; border-bottom:1px solid var(--border); font-size:12.5px; }
+.kv:last-child{border-bottom:0;padding-bottom:2px}
+.kv .k{ color:var(--text-4); flex-shrink:0; letter-spacing:-.005em; }
+.kv .v{ color:var(--text-2); font-family:var(--font-mono); font-size:11.5px; line-height:1.5; text-align:right; word-break:break-word; min-width:0; }
+.kv .v.plain{font-family:var(--font-sans);font-size:12.5px}
+.kv .v.bad{color:var(--err)}
+.kv .v.good{color:var(--ok)}
+.kv .v.warn{color:var(--warn)}
+
+.f-note{ margin-top:12px; padding:10px 13px; border-radius:var(--r-sm); background:var(--chip-bg); font-size:11.5px; line-height:1.55; color:var(--text-3); }
+.f-note.critical{background:var(--err-bg);color:var(--err)}
+.f-note.good{background:var(--ok-bg);color:var(--ok)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{ font-family:var(--font-mono); font-size:11px; padding:4px 10px; border-radius:999px; background:var(--chip-bg); color:var(--text-3); }
+.chip.bad{background:var(--err-bg);color:var(--err)}
+.chip.good{background:var(--ok-bg);color:var(--ok)}
+.chip.warn{background:var(--warn-bg);color:var(--warn)}
+
+/* Raw JSON */
+.raw-block{ margin-top:16px; border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface); overflow:hidden; }
+.raw-block summary{ padding:14px 17px; cursor:pointer; font-size:13px; font-weight:600; list-style:none; display:flex; align-items:center; gap:10px; color:var(--text); }
+.raw-block summary::-webkit-details-marker{display:none}
+.raw-block summary::marker{content:""}
+.raw-block .raw-chev{ margin-left:auto; transition:transform .28s var(--ease); color:var(--text-4); }
+.raw-block[open] .raw-chev{ transform:rotate(180deg); }
+.raw-block pre{
+  max-height:400px; overflow:auto; margin:0; padding:16px;
+  background:rgba(0,0,0,.35); border-top:1px solid var(--border);
+  font-family:var(--font-mono); font-size:10.5px; line-height:1.55; color:#c9d4e6;
+}
+html[data-theme="light"] .raw-block pre{ background:rgba(0,0,0,.04); color:#1d1d1f; }
+
+/* ═══════ INFO MODAL + GUIDE ═══════ */
+.info-modal{
+  position:relative; width:min(500px,100%);
+  max-height:min(84vh,720px);
+  overflow-y:auto; overscroll-behavior:contain;
+  padding:28px 26px calc(28px + env(safe-area-inset-bottom));
+  border:1px solid var(--glass-border); border-radius:var(--r-xl);
+  background:var(--glass-bg);
+  -webkit-backdrop-filter:saturate(180%) blur(28px); backdrop-filter:saturate(180%) blur(28px);
+  box-shadow:var(--glass-shadow),var(--glass-inset);
+  transform:scale(.96) translateY(14px);
+  transition:transform .34s var(--ease);
+}
+.info-backdrop.is-open .info-modal{transform:scale(1) translateY(0)}
+.info-modal .icon-btn{position:absolute;top:16px;right:16px}
+.info-modal h3{ margin-bottom:16px; padding-right:44px; font-family:var(--font-display); font-size:21px; font-weight:700; letter-spacing:-.032em; color:var(--text); }
+.info-modal p{ margin-bottom:12px; font-size:13.5px; line-height:1.65; color:var(--text-3); }
+.info-modal p:last-child{margin-bottom:0}
+.info-modal strong{color:var(--text);font-weight:600}
+
+.info-modal--guide{ width:min(1040px,100%); max-height:min(92vh,860px); padding:26px 28px 28px; }
+.info-modal--guide h3{ margin-bottom:6px; }
+.info-modal--guide .info-lede{ margin-bottom:20px; font-size:13px; color:var(--text-3); line-height:1.55; }
+.step-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.step{ padding:14px 16px; border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface); transition:border-color .2s var(--ease),background .2s var(--ease); }
+.step:hover{ border-color:var(--border-hi); background:var(--surface-hi); }
+.step-head{ display:flex; align-items:center; gap:10px; margin-bottom:9px; }
+.step-num{ width:22px;height:22px; display:grid;place-items:center; flex-shrink:0; border-radius:50%; border:1px solid var(--border); background:var(--surface-hi); font-size:10.5px; font-weight:700; color:var(--text-2); font-variant-numeric:tabular-nums; }
+.step-title{ flex:1; font-size:13px; font-weight:650; letter-spacing:-.012em; color:var(--text); }
+.badge{ flex-shrink:0; font-size:8.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; padding:3px 8px; border-radius:999px; }
+.badge.easy{color:var(--ok);background:var(--ok-bg)}
+.badge.medium{color:var(--warn);background:var(--warn-bg)}
+.badge.hard{color:var(--err);background:var(--err-bg)}
+.step-body{ font-size:12px; line-height:1.6; color:var(--text-3); }
+.step-body ul{margin:0;padding-left:14px}
+.step-body li{margin-bottom:3px}
+.step-body strong{color:var(--text-2);font-weight:600}
+.step-body code{ font-family:var(--font-mono); font-size:11px; background:var(--chip-bg); padding:1.5px 5px; border-radius:4px; color:var(--text-2); }
+.step-body .tip{ margin-top:8px; font-size:11px; color:var(--text-4); font-style:italic; }
+
+/* Repository */
+.repo-list{ display:grid; gap:8px; margin-top:16px; list-style:none; }
+.repo-list a{ display:flex; align-items:center; gap:11px; padding:13px 15px; border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface); font-size:13.5px; font-weight:600; letter-spacing:-.01em; color:var(--text); transition:background .22s var(--ease),border-color .22s var(--ease),transform .22s var(--ease); }
+.repo-list a:hover{ background:var(--surface-hi); border-color:var(--border-hi); transform:translateY(-2px); }
+
+/* Consent modal */
+.consent-list{ display:grid; gap:8px; margin:16px 0 20px; }
+.consent-item{ display:flex; align-items:flex-start; gap:11px; padding:11px 13px; border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface); font-size:12.5px; line-height:1.5; color:var(--text-2); }
+.consent-item .ic{ flex-shrink:0; width:16px; height:16px; color:var(--err); margin-top:1px; }
+.consent-check{ display:flex; align-items:flex-start; gap:10px; padding:13px 15px; border:1px solid var(--border-hi); border-radius:var(--r-md); background:var(--surface-hi); cursor:pointer; user-select:none; }
+.consent-check input{ display:none; }
+.consent-check .box{ flex-shrink:0; width:18px;height:18px; border:1.5px solid var(--text-3); border-radius:5px; display:grid; place-items:center; transition:background .2s var(--ease),border-color .2s var(--ease); }
+.consent-check .box svg{ opacity:0; transition:opacity .18s var(--ease); color:#000; }
+.consent-check input:checked ~ .box{ background:var(--btn-primary-bg); border-color:var(--btn-primary-bg); }
+.consent-check input:checked ~ .box svg{ opacity:1; }
+.consent-check .lbl{ font-size:12.5px; line-height:1.5; color:var(--text-2); }
+.consent-actions{ display:flex; gap:10px; margin-top:18px; }
+.consent-actions .btn-sm{ flex:1; justify-content:center; height:44px; font-size:14px; }
+.consent-actions .btn-sm:disabled{ opacity:.35; cursor:not-allowed; }
+
+footer{ position:relative; z-index:10; padding:22px 20px calc(26px + env(safe-area-inset-bottom)); text-align:center; font-size:11.5px; letter-spacing:.01em; color:var(--text-4); }
+
+@media (max-width:900px){
+  .info-modal--guide{ width:min(640px,100%); }
+  .step-grid{ grid-template-columns:1fr; }
+}
+@media (max-width:720px){
+  :root{--nav-h:52px}
+  .nav-right{gap:14px} .nav-links{gap:14px} .nav-links button{font-size:12px}
+  .logo{font-size:16px} .logo small{font-size:8.5px;letter-spacing:.12em}
+  #hero{padding:calc(var(--nav-h) + 6vh) 20px 7vh}
+  .cta{flex-direction:column;width:100%;max-width:330px;margin-top:32px;gap:10px}
+  .btn{width:100%;height:52px;font-size:17px}
+  .modal,.modal--wide{width:100%;max-height:94svh;border-radius:22px}
+  .modal-body{padding:18px 18px calc(22px + env(safe-area-inset-bottom))}
+  .scan-stage{padding:38px 10px 46px}
+  .scan-orb{width:70px;height:70px;margin-bottom:22px}
+  .scan-orb::after{inset:28px}
+  .score-hero{padding:18px;gap:18px}
+  .score-ring,.score-ring canvas{width:120px !important;height:120px !important}
+  .score-ring{width:120px;height:120px}
+  .score-num{font-size:32px} .score-verdict{font-size:21px}
+  .score-actions{width:100%} .score-actions .btn-sm{flex:1;justify-content:center}
+  .kv{flex-direction:column;gap:4px} .kv .v{text-align:left;width:100%}
+  .info-modal--guide{padding:22px 18px calc(24px + env(safe-area-inset-bottom))}
+}
+@media (max-width:400px){
+  .nav-links{gap:11px} .nav-links button{font-size:11.5px} .logo small{display:none} .f-status{display:none}
+}
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <header>
-      <div>
-        <h1>Privacy & Anonymity Checker</h1>
-        <div class="tagline">Client-side checks: IP lookup, fingerprint, canvas/audio hash, WebRTC ICE, DoH DNS lookup, tracker scan.</div>
-      </div>
+<canvas id="particleCanvas" aria-hidden="true"></canvas>
 
-      <div class="controls">
-        <button id="runBtn">
-          <span id="runBtnText">Run Full Scan</span>
-          <span id="runBtnSpinner" class="loading" style="display: none;"></span>
-        </button>
-        <button id="exportBtn" class="cfg">Export JSON</button>
-        <button id="clearHistory" class="cfg">Clear History</button>
-      </div>
-    </header>
-
-    <div class="grid">
-      <!-- Left Column -->
-      <div>
-        <div class="card">
-          <div class="score-display">
-            <div class="chart-container">
-              <canvas id="radarChart" width="120" height="120"></canvas>
-              <div class="chart-center-text">
-                <div id="scoreLarge" class="chart-score">—%</div>
-                <div class="chart-label">Score</div>
-              </div>
-            </div>
-            <div style="flex: 1; width: 100%;">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                <div>
-                  <div class="small">Anonymity Score</div>
-                  <div class="small muted" style="margin-top: 4px;">Last run: <span id="lastRun">never</span></div>
-                </div>
-              </div>
-
-              <div class="progress">
-                <i id="progressBar"></i>
-              </div>
-              <div class="small muted" style="margin-top: 8px;">Scan progress: <span id="progressText">idle</span></div>
-            </div>
-          </div>
-
-          <details open style="margin-top: 16px;">
-            <summary>Quick summary</summary>
-            <div id="quickList" style="margin-top: 12px;"></div>
-          </details>
-        </div>
-
-        <div class="card" style="margin-top: 16px;">
-          <div class="card-title">History</div>
-          <div class="small muted" style="margin-bottom: 12px;">Local-only (browser)</div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <div class="small muted">Entries: <span id="historyCount">0</span></div>
-          </div>
-          <div id="historyList" style="max-height: 220px; overflow: auto;"></div>
-        </div>
-
-        <div class="card" style="margin-top: 16px;">
-          <div class="card-title">Configuration</div>
-          <div class="small muted" style="margin-bottom: 12px;">Add API tokens to improve IP reputation checks (stored only in your browser localStorage).</div>
-          <div style="display: flex; flex-direction: column; gap: 12px;">
-            <div>
-              <label for="ipinfoToken" class="small">IPinfo token (optional)</label>
-              <input id="ipinfoToken" placeholder="Enter IPinfo token" />
-            </div>
-            <div>
-              <label for="ipqsKey" class="small">IPQualityScore key (optional)</label>
-              <input id="ipqsKey" placeholder="Enter IPQualityScore key" />
-            </div>
-            <div class="small muted">[Unverified] I cannot validate your API keys here; they remain local to your browser.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Column -->
-      <div>
-        <div class="card">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <div>
-              <div class="card-title">Detailed Findings</div>
-              <div class="small muted">Expand sections for details & remediation</div>
-            </div>
-            <div class="small muted">Severity: <span class="status-good">Good</span> / <span class="status-warn">Medium</span> / <span class="status-bad">Critical</span></div>
-          </div>
-
-          <section>
-            <details open>
-              <summary>Connection & IP</summary>
-              <div class="row"><div>Public IP</div><div id="ipVal" class="muted">—</div></div>
-              <div class="row"><div>Geo / ISP</div><div id="geoVal" class="muted">—</div></div>
-              <div class="row"><div>VPN/Proxy Info</div><div id="vpnVal" class="muted">—</div></div>
-            </details>
-
-            <details>
-              <summary>WebRTC Leak Test</summary>
-              <div class="small muted" style="margin-bottom: 12px;">Collects ICE candidates and looks for local/private addresses (requires browser support).</div>
-              <div id="webrtcList"></div>
-            </details>
-
-            <details>
-              <summary>Fingerprinting</summary>
-              <div class="small muted" style="margin-bottom: 12px;">FingerprintJS components + canvas & audio hashes</div>
-              <div class="row"><div>FingerprintJS ID</div><div id="fpId" class="muted">—</div></div>
-              <div class="row"><div>Entropy (approx)</div><div id="fpEntropy" class="muted">—</div></div>
-              <div class="row"><div>Canvas hash</div><div id="canvasHash" class="muted">—</div></div>
-              <div class="row"><div>Audio hash</div><div id="audioHash" class="muted">—</div></div>
-            </details>
-
-            <details>
-              <summary>Tracker / Script Scan</summary>
-              <div class="small muted" style="margin-bottom: 12px;">Scans loaded resources for common tracker domains.</div>
-              <div id="trackerList"></div>
-            </details>
-
-            <details>
-              <summary>DNS Leak (DoH) Test</summary>
-              <div class="small muted" style="margin-bottom: 12px;">Queries public DoH endpoints and compares resolved IPs (indicator, not proof).</div>
-              <div id="dnsList"></div>
-            </details>
-
-            <details>
-              <summary>System Exposure</summary>
-              <div class="row"><div>User agent</div><div id="uaVal" class="muted">—</div></div>
-              <div class="row"><div>Screen</div><div id="screenVal" class="muted">—</div></div>
-              <div class="row"><div>Device memory / Cores</div><div id="sysVal" class="muted">—</div></div>
-              <div class="row"><div>Timezone</div><div id="tzVal" class="muted">—</div></div>
-            </details>
-
-            <details>
-              <summary>Remediation & Quick Fixes</summary>
-              <ul style="margin-top: 12px; padding-left: 20px;">
-                <li>Use a reputable VPN and verify DNS leak tests (Mullvad, ProtonVPN, etc.).</li>
-                <li>Disable WebRTC or use a blocker extension if you need to preserve IP privacy.</li>
-                <li>Use privacy-first browsers (Firefox with hardened settings or Brave).</li>
-                <li>Use extensions like uBlock Origin, Privacy Badger; regularly clear cookies.</li>
-                <li>For maximum anonymity use Tor Browser (trade-offs: speed & site compatibility).</li>
-              </ul>
-            </details>
-          </section>
-        </div>
-
-        <div class="card" style="margin-top: 16px;">
-          <div class="card-title">Raw Data & Developer Output</div>
-          <div class="small muted" style="margin-bottom: 12px;">Useful for debugging. No external storage unless you export.</div>
-          <pre id="rawData">{}</pre>
-        </div>
-      </div>
+<nav>
+  <a href="#" class="logo">Vibex<small>Privacy matters</small></a>
+  <div class="nav-right">
+    <div class="nav-links">
+      <button onclick="openRepositoryModal()">Repository</button>
+      <button onclick="openInfoModal('guide')">User Guide</button>
+      <button onclick="openInfoModal('privacy')">Privacy Policy</button>
     </div>
-
-    <footer>
-      <div class="small" style="margin-bottom: 8px;">luqman habib</div>
-      <div class="small muted">Disclaimer: If you don't want to be cooked, follow mentioned steps</div>
-    </footer>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle appearance">
+      <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+    </button>
   </div>
+</nav>
 
-  <!-- Score Alert Modal -->
-  <div id="scoreAlertModal" class="modal-overlay" style="display: none;">
-    <div class="modal">
-      <div class="modal-header">
-        <div class="modal-title">You cooked! 🍳</div>
-        <div class="small muted">Your anonymity score is below 90%. Would you like to improve it?</div>
+<main id="hero">
+  <h1 class="hero-title">Are you <em>anonymous?</em></h1>
+  <p class="hero-sub">
+    A forensic-level client-side audit. Your IP, exact coordinates, ISP, GPU, screen,
+    fonts, codecs, audio stack, media devices, storage, permissions and more —
+    harvested the same way trackers and attackers do it. Nothing leaves your device.
+  </p>
+  <div class="cta">
+    <button class="btn btn-primary" onclick="openScanFlow()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
+      Run full exposure scan
+    </button>
+    <button class="btn btn-ghost" onclick="openInstructions()">Instructions</button>
+  </div>
+</main>
+
+<footer>© 2026 Vibex — Security</footer>
+
+<!-- ═══════ CONSENT MODAL ═══════ -->
+<div class="modal-backdrop" id="consentBackdrop" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-head-title">
+        <span class="dot" style="background:var(--err);box-shadow:0 0 0 0 var(--err-bg)"></span>
+        Acknowledgment required
       </div>
-      <div class="modal-body">
-        <p>Your current privacy profile has some weaknesses that could make you more identifiable online.</p>
+      <button class="icon-btn" onclick="closeConsent()" aria-label="Close">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13.5px;line-height:1.6;color:var(--text-3);margin-bottom:14px">
+        This scan deliberately extracts every identifiable signal your browser will hand over.
+        Some of what you are about to see is <strong style="color:var(--text)">personally sensitive</strong> —
+        exact location, ISP, device model, hardware fingerprint — and is precisely the data
+        advertisers, trackers and attackers collect about you in the wild.
+      </p>
+
+      <div class="consent-list">
+        <div class="consent-item">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+          <span>Approximate &amp; precise IP-based geolocation (city, postal, coordinates, ISP, ASN)</span>
+        </div>
+        <div class="consent-item">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+          <span>WebRTC ICE candidates — may include local LAN IPv4 / IPv6 addresses</span>
+        </div>
+        <div class="consent-item">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+          <span>GPU vendor &amp; model (via WebGL), installed font list, canvas + audio hashes</span>
+        </div>
+        <div class="consent-item">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+          <span>Screen metrics, colour depth, pixel ratio, CPU cores, RAM, battery, network class</span>
+        </div>
+        <div class="consent-item">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+          <span>Media devices (mic/camera/speaker counts), codec support, audio pipeline latency</span>
+        </div>
+        <div class="consent-item">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+          <span>Storage quota usage, IndexedDB databases, granted permission states</span>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button id="letMeCooked" class="cfg">Let me cooked</button>
-        <button id="makeMeAnonymous">Make me anonymous</button>
+
+      <p style="font-size:12px;line-height:1.55;color:var(--text-4);margin-bottom:16px">
+        Nothing is transmitted anywhere. Everything is computed locally and displayed to you.
+        The point is to show you your own exposure surface.
+      </p>
+
+      <label class="consent-check" for="consentBox">
+        <input type="checkbox" id="consentBox" onchange="document.getElementById('consentGo').disabled=!this.checked">
+        <span class="box">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.4l3.6 3.6L13.5 4.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="lbl">I understand that this tool will expose personally-identifying information about my browser and network, and I want to see it anyway.</span>
+      </label>
+
+      <div class="consent-actions">
+        <button class="btn-sm line" onclick="closeConsent()">Cancel</button>
+        <button class="btn-sm solid" id="consentGo" disabled onclick="acceptConsent()">I acknowledge — run scan</button>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Full Page Security Guide Modal -->
-  <div id="securityGuideModal" class="full-page-modal" style="display: none;">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">Privacy Improvement Guide</div>
-        <div class="small muted">Follow these steps to enhance your online anonymity</div>
+<!-- ═══════ SCAN MODAL ═══════ -->
+<div class="modal-backdrop" id="scanModalBackdrop" role="dialog" aria-modal="true" aria-label="Privacy scan">
+  <div class="modal modal--wide">
+    <div class="modal-header">
+      <div class="modal-head-title"><span class="dot" id="scanDot"></span>Full exposure scan</div>
+      <button class="icon-btn" onclick="closeScanModal()" aria-label="Close">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="scan-stage" id="scanStage">
+        <div class="scan-orb" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="scan-stage-title" id="scanStageTitle">Harvesting browser signals</div>
+        <div class="scan-stage-sub">Everything runs locally — no data is uploaded.</div>
+        <div class="track"><i id="scanBar"></i></div>
+        <div class="status" id="scanStatus">Starting…</div>
       </div>
-      <div class="modal-body">
-        <div class="step-guide">
-          <div class="step">
-            <div class="step-title">
-              <span class="step-number">1</span>
-              Install a Privacy-Focused Browser
-              <span class="badge badge-easy">Easy</span>
-            </div>
-            <div class="step-content">
-              <p>Switch to a browser designed for privacy:</p>
-              <ul>
-                <li><strong>Firefox</strong> with privacy settings hardened</li>
-                <li><strong>Brave</strong> with shields enabled</li>
-                <li><strong>Tor Browser</strong> for maximum anonymity</li>
-              </ul>
+
+      <div id="scanResults" hidden>
+        <div class="critical-banner" id="criticalBanner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span id="criticalText"></span>
+        </div>
+
+        <div class="score-hero">
+          <div class="score-ring">
+            <canvas id="scoreChart" width="150" height="150"></canvas>
+            <div class="score-center">
+              <div class="score-num" id="scoreNum">—</div>
+              <div class="score-lbl">Anonymity</div>
             </div>
           </div>
-          
-          <div class="step">
-            <div class="step-title">
-              <span class="step-number">2</span>
-              Use a Reputable VPN
-              <span class="badge badge-medium">Medium</span>
-            </div>
-            <div class="step-content">
-              <p>Hide your IP address and encrypt your connection:</p>
-              <ul>
-                <li><strong>Mullvad VPN</strong> - No logs, anonymous accounts</li>
-                <li><strong>ProtonVPN</strong> - Swiss-based, strong privacy</li>
-                <li><strong>IVPN</strong> - Independent and transparent</li>
-              </ul>
-              <p class="small muted">Always verify DNS leak protection after setup.</p>
-            </div>
-          </div>
-          
-          <div class="step">
-            <div class="step-title">
-              <span class="step-number">3</span>
-              Install Privacy Extensions
-              <span class="badge badge-easy">Easy</span>
-            </div>
-            <div class="step-content">
-              <p>Essential browser extensions for privacy:</p>
-              <ul>
-                <li><strong>uBlock Origin</strong> - Blocks ads and trackers</li>
-                <li><strong>Privacy Badger</strong> - Blocks invisible trackers</li>
-                <li><strong>HTTPS Everywhere</strong> - Forces secure connections</li>
-                <li><strong>CanvasBlocker</strong> - Prevents canvas fingerprinting</li>
-              </ul>
-            </div>
-          </div>
-          
-          <div class="step">
-            <div class="step-title">
-              <span class="step-number">4</span>
-              Disable WebRTC
-              <span class="badge badge-medium">Medium</span>
-            </div>
-            <div class="step-content">
-              <p>Prevent WebRTC from leaking your local IP address:</p>
-              <ul>
-                <li><strong>Firefox:</strong> Type <code>about:config</code> in address bar, search for <code>media.peerconnection.enabled</code> and set to <code>false</code></li>
-                <li><strong>Chrome/Brave:</strong> Install WebRTC Leak Prevent extension</li>
-                <li><strong>All browsers:</strong> Use a VPN that blocks WebRTC leaks</li>
-              </ul>
-            </div>
-          </div>
-          
-          <div class="step">
-            <div class="step-title">
-              <span class="step-number">5</span>
-              Change DNS Providers
-              <span class="badge badge-easy">Easy</span>
-            </div>
-            <div class="step-content">
-              <p>Use privacy-respecting DNS servers:</p>
-              <ul>
-                <li><strong>Cloudflare (1.1.1.1)</strong> - Fast with privacy focus</li>
-                <li><strong>Quad9 (9.9.9.9)</strong> - Blocks malicious domains</li>
-                <li><strong>NextDNS</strong> - Customizable with blocking options</li>
-              </ul>
-            </div>
-          </div>
-          
-          <div class="step">
-            <div class="step-title">
-              <span class="step-number">6</span>
-              Browser Hardening
-              <span class="badge badge-hard">Advanced</span>
-            </div>
-            <div class="step-content">
-              <p>Advanced browser configuration:</p>
-              <ul>
-                <li>Disable third-party cookies</li>
-                <li>Block fingerprinting techniques</li>
-                <li>Use private browsing mode by default</li>
-                <li>Clear browsing data on exit</li>
-                <li>Disable JavaScript for untrusted sites</li>
-              </ul>
-            </div>
-          </div>
-          
-          <div class="step">
-            <div class="step-title">
-              <span class="step-number">7</span>
-              System-Level Privacy
-              <span class="badge badge-hard">Advanced</span>
-            </div>
-            <div class="step-content">
-              <p>Operating system and application privacy:</p>
-              <ul>
-                <li>Use a privacy-focused OS like Tails or Qubes</li>
-                <li>Disable telemetry and data collection</li>
-                <li>Use open-source software when possible</li>
-                <li>Encrypt your hard drive</li>
-                <li>Use a separate device for sensitive activities</li>
-              </ul>
+          <div class="score-meta">
+            <div class="score-verdict" id="scoreVerdict">—</div>
+            <div class="score-sub" id="scoreSub">—</div>
+            <div class="score-stats" id="scoreStats"></div>
+            <div class="score-actions">
+              <button class="btn-sm solid" onclick="runFullScan()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8 8 0 105.6 6.6M20 4v7h-7"/></svg>
+                Rescan
+              </button>
+              <button class="btn-sm line" onclick="exportJSON()">Export JSON</button>
+              <button class="btn-sm line" onclick="openInstructions()">Improve score</button>
             </div>
           </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button id="closeGuide" class="cfg">Close Guide</button>
-        <button id="rescanAfterGuide">Run Scan Again</button>
+
+        <div class="findings" id="findings"></div>
+
+        <details class="raw-block">
+          <summary>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+            Raw JSON — everything collected
+            <svg class="raw-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <pre id="rawJSON">{}</pre>
+        </details>
       </div>
     </div>
   </div>
+</div>
 
-  <script>
-  // --- Utilities and safe DOM setter ---
-  const el = id => document.getElementById(id) || { textContent: '' };
-  const setText = (id, text) => { const e = document.getElementById(id); if (e) e.textContent = text; };
-  const setHTML = (id, html) => { const e = document.getElementById(id); if (e) e.innerHTML = html; };
+<!-- ═══════ INFO MODAL ═══════ -->
+<div class="info-backdrop" id="infoModalBackdrop" role="dialog" aria-modal="true">
+  <div class="info-modal" id="infoModal">
+    <button class="icon-btn" onclick="closeInfoModal()" aria-label="Close">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+    <h3 id="infoModalTitle"></h3>
+    <div id="infoModalContent"></div>
+  </div>
+</div>
 
-  // --- Progress helper ---
-  const setProgress = (n, text) => {
-    const bar = document.getElementById('progressBar');
-    if (bar) bar.style.width = (n || 0) + '%';
-    setText('progressText', text || '');
+<!-- ═══════ REPOSITORY MODAL ═══════ -->
+<div class="info-backdrop" id="repoModalBackdrop" role="dialog" aria-modal="true">
+  <div class="info-modal">
+    <button class="icon-btn" onclick="closeRepositoryModal()" aria-label="Close">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+    <h3>Repository</h3>
+    <p>Explore the rest of our security tools.</p>
+    <ul class="repo-list">
+      <li><a href="index%202.html">🔐&nbsp; Ghost your files</a></li>
+      <li><a href="#" target="_blank" rel="noopener">🔍&nbsp; Scan</a></li>
+      <li><a href="#" target="_blank" rel="noopener">🕵️&nbsp; Are you anonymous?</a></li>
+    </ul>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ═══════ THEME ═══════ */
+const metaTheme = document.querySelector('meta[name="theme-color"]');
+function applyTheme(theme){
+  document.documentElement.setAttribute("data-theme", theme);
+  try { localStorage.setItem("vibex-theme", theme); } catch(e){}
+  if (metaTheme) metaTheme.setAttribute("content", theme === "light" ? "#fbfbfd" : "#000000");
+  window.dispatchEvent(new CustomEvent("themechange", { detail: { theme } }));
+}
+function toggleTheme(){
+  const current = document.documentElement.getAttribute("data-theme") || "dark";
+  applyTheme(current === "dark" ? "light" : "dark");
+}
+
+/* ═══════ HELPERS ═══════ */
+const $ = (id) => document.getElementById(id);
+const ESC_MAP = { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" };
+const esc = (s) => String(s === null || s === undefined ? "" : s).replace(/[&<>"']/g, (c) => ESC_MAP[c]);
+const isLight = () => document.documentElement.getAttribute("data-theme") === "light";
+const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+const b2mb = (b) => (b / 1048576).toFixed(2) + " MB";
+const b2gb = (b) => (b / 1073741824).toFixed(2) + " GB";
+
+/* ═══════ MODAL MANAGEMENT ═══════ */
+let lastFocused = null;
+function lockScroll(){ document.body.style.overflow = "hidden"; }
+function unlockScroll(){
+  const anyOpen =
+    $("consentBackdrop").classList.contains("is-open") ||
+    $("scanModalBackdrop").classList.contains("is-open") ||
+    $("infoModalBackdrop").classList.contains("is-open") ||
+    $("repoModalBackdrop").classList.contains("is-open");
+  if (!anyOpen) document.body.style.overflow = "";
+}
+function closeConsent(){
+  $("consentBackdrop").classList.remove("is-open"); unlockScroll();
+  if (lastFocused) lastFocused.focus();
+}
+function closeScanModal(){
+  $("scanModalBackdrop").classList.remove("is-open"); unlockScroll();
+  if (lastFocused) lastFocused.focus();
+}
+function closeInfoModal(){
+  $("infoModalBackdrop").classList.remove("is-open");
+  $("infoModal").classList.remove("info-modal--guide");
+  unlockScroll(); if (lastFocused) lastFocused.focus();
+}
+function closeRepositoryModal(){
+  $("repoModalBackdrop").classList.remove("is-open"); unlockScroll();
+  if (lastFocused) lastFocused.focus();
+}
+$("consentBackdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeConsent(); });
+$("scanModalBackdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeScanModal(); });
+$("infoModalBackdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeInfoModal(); });
+$("repoModalBackdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeRepositoryModal(); });
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if ($("repoModalBackdrop").classList.contains("is-open")) return closeRepositoryModal();
+  if ($("infoModalBackdrop").classList.contains("is-open")) return closeInfoModal();
+  if ($("scanModalBackdrop").classList.contains("is-open")) return closeScanModal();
+  if ($("consentBackdrop").classList.contains("is-open")) return closeConsent();
+});
+function openRepositoryModal(){
+  lastFocused = document.activeElement;
+  $("repoModalBackdrop").classList.add("is-open"); lockScroll();
+}
+
+/* ═══════ CONSENT FLOW ═══════ */
+const CONSENT_KEY = "vibex-consent-v1";
+function openScanFlow(){
+  lastFocused = document.activeElement;
+  let accepted = false;
+  try { accepted = localStorage.getItem(CONSENT_KEY) === "1"; } catch(e){}
+  if (accepted){ startScan(); return; }
+  $("consentBackdrop").classList.add("is-open");
+  lockScroll();
+}
+function acceptConsent(){
+  try { localStorage.setItem(CONSENT_KEY, "1"); } catch(e){}
+  closeConsent();
+  startScan();
+}
+function startScan(){
+  lastFocused = document.activeElement;
+  scanning = false;
+  $("scanModalBackdrop").classList.add("is-open");
+  lockScroll();
+  initChart();
+  runFullScan();
+}
+
+/* ═══════ INFO / GUIDE CONTENT ═══════ */
+const GUIDE_HTML = `
+  <p class="info-lede">Seven steps, ordered by effort vs. payoff. Start at the top and re-scan after each change to watch your score move.</p>
+  <div class="step-grid">
+    <div class="step"><div class="step-head"><span class="step-num">1</span><span class="step-title">Install a privacy-first browser</span><span class="badge easy">Easy</span></div>
+      <div class="step-body"><ul><li><strong>Firefox</strong> — hardened, RFP mode</li><li><strong>Brave</strong> — shields on by default</li><li><strong>Tor Browser</strong> — strongest anonymity</li></ul></div></div>
+    <div class="step"><div class="step-head"><span class="step-num">2</span><span class="step-title">Use a reputable VPN</span><span class="badge medium">Medium</span></div>
+      <div class="step-body"><ul><li><strong>Mullvad</strong> — no logs, no email</li><li><strong>Proton VPN</strong> — Swiss, audited</li><li><strong>IVPN</strong> — independent</li></ul><div class="tip">Re-scan after connecting.</div></div></div>
+    <div class="step"><div class="step-head"><span class="step-num">3</span><span class="step-title">Add privacy extensions</span><span class="badge easy">Easy</span></div>
+      <div class="step-body"><ul><li><strong>uBlock Origin</strong> — content blocking</li><li><strong>Privacy Badger</strong> — tracker defence</li><li><strong>CanvasBlocker</strong> — spoofs canvas/WebGL</li></ul></div></div>
+    <div class="step"><div class="step-head"><span class="step-num">4</span><span class="step-title">Block WebRTC IP leaks</span><span class="badge medium">Medium</span></div>
+      <div class="step-body"><ul><li><strong>Firefox:</strong> <code>about:config</code> → <code>media.peerconnection.enabled</code> = <code>false</code></li><li><strong>Chrome/Brave:</strong> WebRTC leak prevent extension</li><li><strong>VPN:</strong> one that blocks WebRTC at the tunnel</li></ul></div></div>
+    <div class="step"><div class="step-head"><span class="step-num">5</span><span class="step-title">Switch to encrypted DNS</span><span class="badge easy">Easy</span></div>
+      <div class="step-body"><ul><li><strong>Cloudflare</strong> — 1.1.1.1, DoH + DoT</li><li><strong>Quad9</strong> — 9.9.9.9, blocks malware</li><li><strong>NextDNS</strong> — customisable</li></ul></div></div>
+    <div class="step"><div class="step-head"><span class="step-num">6</span><span class="step-title">Harden the browser</span><span class="badge hard">Advanced</span></div>
+      <div class="step-body"><ul><li>Block third-party cookies &amp; storage</li><li>Enable strict fingerprinting protection</li><li>Clear cookies and site data on close</li><li>Disable JavaScript for untrusted sites</li></ul></div></div>
+    <div class="step"><div class="step-head"><span class="step-num">7</span><span class="step-title">System-level privacy</span><span class="badge hard">Advanced</span></div>
+      <div class="step-body"><ul><li>Privacy OS: Tails, Qubes, Whonix</li><li>Disable OS telemetry</li><li>Full-disk encryption</li><li>Separate device / VM for sensitive work</li></ul></div></div>
+  </div>
+`;
+
+const INFO = {
+  guide: { title: "User Guide", html: `
+    <p>Everything happens <strong>inside this tab</strong>. No IP, fingerprint or result ever leaves your device.</p>
+    <p>This scan reveals the same signals that advertising networks, analytics SDKs and attackers read every time you load a page. Look at them, understand them, then work through the guide to shrink your footprint.</p>
+    <p>The score is out of 100 — higher is better.</p>` },
+  privacy: { title: "Privacy Policy", html: `
+    <p>We collect nothing. There is no backend.</p>
+    <p>No cookies, no analytics, no telemetry. Only public lookup services the scan itself uses: ipify, ipapi.co, and three DoH resolvers (Google, Cloudflare, Quad9). They see your IP the same way any website does.</p>
+    <p>Privacy isn't a feature here — it's the entire product.</p>` }
+};
+function openInfoModal(type){
+  const data = INFO[type]; if (!data) return;
+  lastFocused = document.activeElement;
+  $("infoModal").classList.remove("info-modal--guide");
+  $("infoModalTitle").textContent = data.title;
+  $("infoModalContent").innerHTML = data.html;
+  $("infoModalBackdrop").classList.add("is-open"); lockScroll();
+}
+function openInstructions(){
+  lastFocused = document.activeElement;
+  $("infoModal").classList.add("info-modal--guide");
+  $("infoModalTitle").textContent = "How to become anonymous";
+  $("infoModalContent").innerHTML = GUIDE_HTML;
+  $("infoModalBackdrop").classList.add("is-open"); lockScroll();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COLLECTORS — the harvest
+   ═══════════════════════════════════════════════════════════ */
+let scanning = false;
+let scoreChart = null;
+let lastResult = null;
+
+async function sha256Hex(input){
+  try{
+    const data = (typeof input === "string") ? new TextEncoder().encode(input) : input;
+    const digest = await crypto.subtle.digest("SHA-256", data);
+    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }catch(e){ return null; }
+}
+
+/* IP + full geolocation */
+async function getIpAndGeo(){
+  let publicIp = null, ipv6 = null, geo = {}, geo2 = {};
+  try{
+    const r = await fetch("https://api.ipify.org?format=json");
+    if (r.ok){ const j = await r.json(); publicIp = j.ip; }
+  }catch(e){}
+  try{
+    const r6 = await fetch("https://api64.ipify.org?format=json");
+    if (r6.ok){ const j = await r6.json(); ipv6 = (j.ip && j.ip.includes(":")) ? j.ip : null; if (!publicIp) publicIp = j.ip; }
+  }catch(e){}
+  try{
+    if (publicIp){
+      const r2 = await fetch(`https://ipapi.co/${publicIp}/json/`);
+      if (r2.ok) geo = await r2.json();
+    }
+  }catch(e){}
+  try{
+    const r3 = await fetch("https://ipinfo.io/json");
+    if (r3.ok){ geo2 = await r3.json(); if (!publicIp) publicIp = geo2.ip; }
+  }catch(e){}
+
+  const merged = {
+    publicIp: publicIp || "unknown",
+    ipv6: ipv6 || null,
+    city: geo.city || geo2.city || null,
+    region: geo.region || geo2.region || null,
+    country: geo.country_name || geo2.country || null,
+    countryCode: geo.country_code || geo2.country || null,
+    postal: geo.postal || geo2.postal || null,
+    latitude: (geo.latitude !== undefined) ? geo.latitude : (geo2.loc ? geo2.loc.split(",")[0] : null),
+    longitude: (geo.longitude !== undefined) ? geo.longitude : (geo2.loc ? geo2.loc.split(",")[1] : null),
+    timezone: geo.timezone || geo2.timezone || null,
+    utcOffset: geo.utc_offset || null,
+    org: geo.org || geo2.org || null,
+    asn: geo.asn || geo2.asn || null,
+    currency: geo.currency || null,
+    languages: geo.languages || null,
+    callingCode: geo.country_calling_code || null,
+    isEu: geo.in_eu || null,
+    raw: { ipapi: geo, ipinfo: geo2 }
   };
+  return merged;
+}
 
-  // --- Loading state for scan button ---
-  const setLoadingState = (isLoading) => {
-    const runBtn = document.getElementById('runBtn');
-    const runBtnText = document.getElementById('runBtnText');
-    const runBtnSpinner = document.getElementById('runBtnSpinner');
-    
-    if (runBtn) runBtn.disabled = isLoading;
-    if (runBtnText) runBtnText.textContent = isLoading ? 'Scanning...' : 'Run Full Scan';
-    if (runBtnSpinner) runBtnSpinner.style.display = isLoading ? 'inline-block' : 'none';
-  };
-
-  // --- Show score alert modal ---
-  const showScoreAlert = (score) => {
-    const modal = document.getElementById('scoreAlertModal');
-    if (modal) {
-      modal.style.display = 'flex';
-    }
-  };
-
-  // --- Show security guide modal ---
-  const showSecurityGuide = () => {
-    const modal = document.getElementById('securityGuideModal');
-    if (modal) {
-      modal.style.display = 'block';
-      document.body.style.overflow = 'hidden'; // Prevent background scrolling
-    }
-  };
-
-  // --- Close modal ---
-  const closeModal = (modalId) => {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.style.display = 'none';
-      document.body.style.overflow = ''; // Restore scrolling
-    }
-  };
-
-  // --- Chart (doughnut) ---
-  let radarChart = null;
-  function initChart() {
-    const c = document.getElementById('radarChart');
-    if (!c) return;
-    const ctx = c.getContext('2d');
-    radarChart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Connection','Fingerprint','Trackers','System','DNS'],
-        datasets: [{
-          data: [20,20,20,20,20],
-          backgroundColor: ['#60a5fa','#a78bfa','#34d399','#fbbf24','#f472b6'],
-          hoverOffset: 4,
-          borderWidth: 0
-        }]
-      },
-      options: { 
-        cutout: '70%', 
-        plugins: { 
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return `${context.label}: ${context.parsed}%`;
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-
-  // --- Local history functions ---
-  function loadHistory() {
-    let h = [];
-    try { h = JSON.parse(localStorage.getItem('pa_history') || '[]'); } catch(e) { h = []; }
-    setText('historyCount', (h && h.length) || 0);
-    const box = document.getElementById('historyList');
-    if (!box) return;
-    box.innerHTML = '';
-    
-    if (h.length === 0) {
-      box.innerHTML = '<div class="muted small" style="text-align: center; padding: 20px;">No scan history yet</div>';
-      return;
-    }
-    
-    (h || []).slice().reverse().forEach((entry, i) => {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'history-item';
-      const idx = (h.length - 1 - i);
-      wrapper.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div class="time">${new Date(entry.time).toLocaleString()}</div>
-            <div class="score">Score: ${entry.score}%</div>
-          </div>
-          <div><button data-idx='${idx}' class="cfg">Load</button></div>
-        </div>
-      `;
-      box.appendChild(wrapper);
-    });
-    
-    box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
-      const idx = b.getAttribute('data-idx'); 
-      loadFromHistory(parseInt(idx, 10));
-    }));
-  }
-  
-  function saveToHistory(obj) {
-    try {
-      const h = JSON.parse(localStorage.getItem('pa_history') || '[]');
-      h.push(obj);
-      localStorage.setItem('pa_history', JSON.stringify(h));
-      loadHistory();
-    } catch(e){ console.warn('history save',e); }
-  }
-  
-  function clearHistory() { 
-    if (confirm('Are you sure you want to clear all scan history?')) {
-      localStorage.removeItem('pa_history'); 
-      loadHistory(); 
-    }
-  }
-  
-  function loadFromHistory(idx) {
-    try {
-      const h = JSON.parse(localStorage.getItem('pa_history') || '[]');
-      if (h[idx]) {
-        displayResults(h[idx]);
-      }
-    } catch(e) { console.warn('history load', e); }
-  }
-
-  // --- Display results from history ---
-  function displayResults(result) {
-    setText('scoreLarge', result.score + '%');
-    setText('lastRun', new Date(result.time).toLocaleString());
-    document.getElementById('rawData').textContent = JSON.stringify(result, null, 2);
-    
-    // Update IP section
-    if (result.details.ip) {
-      setText('ipVal', result.details.ip.publicIp || 'unknown');
-      const geoLabel = (result.details.ip.geo.city ? result.details.ip.geo.city + ', ' : '') + 
-                      (result.details.ip.geo.region ? result.details.ip.geo.region + ', ' : '') + 
-                      (result.details.ip.geo.country_name || result.details.ip.geo.country || '—');
-      setText('geoVal', geoLabel);
-      setText('vpnVal', result.details.ip.geo.org || '—');
-    }
-    
-    // Update fingerprint section
-    if (result.details.fingerprint) {
-      setText('fpId', result.details.fingerprint.id || '—');
-      setText('fpEntropy', (result.details.fingerprint.entropyApprox !== null) ? 
-        (result.details.fingerprint.entropyApprox + ' (approx)') : '—');
-    }
-    
-    // Update canvas and audio
-    if (result.details.canvas) {
-      setText('canvasHash', result.details.canvas.hash ? 
-        (result.details.canvas.hash.slice(0, 16) + '...') : 'n/a');
-    }
-    
-    if (result.details.audio) {
-      setText('audioHash', result.details.audio.hash ? 
-        (result.details.audio.hash.slice(0, 16) + '...') : 'n/a');
-    }
-    
-    // Update WebRTC
-    const webrtcListEl = document.getElementById('webrtcList');
-    if (webrtcListEl && result.details.webrtc) {
-      webrtcListEl.innerHTML = '';
-      if (result.details.webrtc.localIPs && result.details.webrtc.localIPs.length) {
-        result.details.webrtc.localIPs.forEach(ip => { 
-          const d = document.createElement('div'); 
-          d.textContent = ip; 
-          d.className = 'muted'; 
-          webrtcListEl.appendChild(d); 
-        });
-      } else {
-        webrtcListEl.textContent = result.details.webrtc.note || 'No local addresses found in ICE candidates';
-      }
-    }
-    
-    // Update trackers
-    const trackerBox = document.getElementById('trackerList');
-    if (trackerBox && result.details.trackers) {
-      trackerBox.innerHTML = '';
-      if (result.details.trackers && result.details.trackers.length) {
-        result.details.trackers.forEach(t => { 
-          const d = document.createElement('div'); 
-          d.textContent = t; 
-          d.className = 'muted'; 
-          trackerBox.appendChild(d); 
-        });
-      } else {
-        trackerBox.textContent = 'No common trackers detected in loaded resources';
-      }
-    }
-    
-    // Update DNS
-    const dnsBox = document.getElementById('dnsList');
-    if (dnsBox && result.details.dns) {
-      dnsBox.innerHTML = '';
-      Object.keys(result.details.dns).forEach(k => {
-        const item = result.details.dns[k];
-        const div = document.createElement('div');
-        if (item.error) div.textContent = `${k}: error (${item.error})`;
-        else div.textContent = `${k}: ${Array.isArray(item.ips) && item.ips.length ? item.ips.join(', ') : 'no IPs in response'}`;
-        div.className = 'muted';
-        dnsBox.appendChild(div);
+/* FingerprintJS */
+async function runFingerprint(){
+  const out = { id: null, entropyApprox: null, componentsCount: 0, components: {} };
+  try{
+    if (!window.FingerprintJS) return out;
+    const fp = await FingerprintJS.load();
+    const res = await fp.get();
+    out.id = (res && res.visitorId) ? res.visitorId : null;
+    out.componentsCount = (res && res.components) ? Object.keys(res.components).length : 0;
+    out.entropyApprox = Math.min(100, Math.round(out.componentsCount * 6));
+    if (res && res.components){
+      Object.keys(res.components).forEach(k => {
+        try{ out.components[k] = res.components[k].value; }catch(e){}
       });
     }
-    
-    // Update system info
-    if (result.details.system) {
-      setText('uaVal', result.details.system.ua || '—');
-      setText('screenVal', result.details.system.screen || '—');
-      setText('sysVal', ((result.details.system.memory ? (result.details.system.memory + ' GB ') : '') + 
-        (result.details.system.cores ? (result.details.system.cores + ' cores') : '') || '—'));
-      setText('tzVal', result.details.system.timezone || '—');
+  }catch(e){}
+  return out;
+}
+
+/* Client Hints (Chromium) */
+async function getClientHints(){
+  try{
+    if (!navigator.userAgentData) return null;
+    const low = {
+      brands: navigator.userAgentData.brands || null,
+      mobile: navigator.userAgentData.mobile,
+      platform: navigator.userAgentData.platform || null
+    };
+    let high = null;
+    if (navigator.userAgentData.getHighEntropyValues){
+      try{
+        high = await navigator.userAgentData.getHighEntropyValues([
+          "architecture","bitness","model","platformVersion","uaFullVersion",
+          "fullVersionList","wow64"
+        ]);
+      }catch(e){}
     }
-    
-    // Update quick summary
-    const quick = document.getElementById('quickList');
-    if (quick) {
-      quick.innerHTML = '';
-      const add = (label, status) => {
-        const d = document.createElement('div');
-        d.style.display = 'flex'; 
-        d.style.justifyContent = 'space-between'; 
-        d.style.padding = '8px 0';
-        d.style.borderBottom = '1px solid var(--border)';
-        
-        const left = document.createElement('div'); 
-        left.textContent = label;
-        left.className = 'small';
-        
-        const right = document.createElement('div'); 
-        right.textContent = status;
-        right.className = 'small';
-        
-        d.appendChild(left); 
-        d.appendChild(right);
-        quick.appendChild(d);
-      };
-      
-      add('Public IP', result.details.ip.publicIp || 'unknown');
-      add('Fingerprint entropy', (result.details.fingerprint && result.details.fingerprint.entropyApprox) ? 
-        (result.details.fingerprint.entropyApprox + ' (approx)') : '—');
-      add('Trackers found', (result.details.trackers ? result.details.trackers.length : 0));
-      add('WebRTC leak', (result.details.webrtc && result.details.webrtc.localIPs && result.details.webrtc.localIPs.length) ? 'yes' : 'no');
-    }
-    
-    // Update radar chart
-    if (radarChart) {
-      radarChart.data.datasets[0].data = [
-        Math.max(0, 20 - (result.details.ip && result.details.ip.geo && result.details.ip.geo.org ? 0 : 5)),
-        Math.max(0, 20 - ((result.details.fingerprint && result.details.fingerprint.entropyApprox && result.details.fingerprint.entropyApprox > 60) ? 0 : 6)),
-        Math.max(0, 20 - ((result.details.trackers && result.details.trackers.length) ? 8 : 0)),
-        Math.max(0, 20 - ((result.details.system && (result.details.system.memory || result.details.system.cores)) ? 6 : 0)),
-        Math.max(0, 20 - ((result.details.dns && Object.keys(result.details.dns || {}).length) ? 6 : 0))
-      ];
-      radarChart.update();
-    }
-  }
+    return { low, high };
+  }catch(e){ return null; }
+}
 
-  // --- Hash helper using SubtleCrypto ---
-  async function sha256Hex(input) {
-    try {
-      const data = (typeof input === 'string') ? new TextEncoder().encode(input) : input;
-      const digest = await crypto.subtle.digest('SHA-256', data);
-      return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
-    } catch(e) { return null; }
-  }
+/* WebGL */
+function getWebGL(){
+  try{
+    const canvas = document.createElement("canvas");
+    const gl = canvas.getContext("webgl2") || canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    if (!gl) return null;
+    const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+    const exts = gl.getSupportedExtensions() || [];
+    return {
+      vendor: gl.getParameter(gl.VENDOR),
+      renderer: gl.getParameter(gl.RENDERER),
+      unmaskedVendor: dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : null,
+      unmaskedRenderer: dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : null,
+      version: gl.getParameter(gl.VERSION),
+      shadingLang: gl.getParameter(gl.SHADING_LANGUAGE_VERSION),
+      maxTextureSize: gl.getParameter(gl.MAX_TEXTURE_SIZE),
+      maxVertexAttribs: gl.getParameter(gl.MAX_VERTEX_ATTRIBS),
+      maxViewport: (function(){ try{ return Array.from(gl.getParameter(gl.MAX_VIEWPORT_DIMS)); }catch(e){ return null; } })(),
+      extensions: exts.slice(0, 40),
+      extensionsCount: exts.length
+    };
+  }catch(e){ return null; }
+}
 
-  // --- IP + Geo (with fallbacks) ---
-  async function getIpAndGeo() {
-    let publicIp = null, geo = {};
-    try {
-      // Try ipify
-      const r = await fetch('https://api.ipify.org?format=json');
-      if (r.ok) { const j = await r.json(); publicIp = j.ip; }
-    } catch(e){ /* ignore */ }
-
-    try {
-      if (publicIp) {
-        // primary geo: ipapi
-        const r2 = await fetch(`https://ipapi.co/${publicIp}/json/`);
-        if (r2.ok) geo = await r2.json();
-      } else {
-        // fallback to ipinfo (no token)
-        const r3 = await fetch('https://ipinfo.io/json');
-        if (r3.ok) { geo = await r3.json(); publicIp = geo.ip || publicIp; }
-      }
-    } catch(e){ /* ignore */ }
-
-    return { publicIp: publicIp || 'unknown', geo: geo || {} };
-  }
-
-  // --- Fingerprint (FingerprintJS open-source) ---
-  async function runFingerprint() {
-    const out = { id: null, entropyApprox: null, componentsCount: 0 };
-    try {
-      if (!window.FingerprintJS) return out;
-      const fp = await FingerprintJS.load();
-      const res = await fp.get();
-      out.id = res && res.visitorId ? res.visitorId : null;
-      out.componentsCount = res && res.components ? Object.keys(res.components).length : 0;
-      // Approx entropy (very rough): components * 6 (cap at 100)
-      out.entropyApprox = Math.min(100, Math.round(out.componentsCount * 6));
-    } catch(e) { console.warn('fingerprint error', e); }
-    return out;
-  }
-
-  // --- Canvas fingerprint hash ---
-  async function canvasHash() {
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = 220; canvas.height = 60;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return null;
-      ctx.fillStyle = '#f60'; ctx.fillRect(0, 0, 220, 60);
-      ctx.textBaseline = 'alphabetic'; ctx.font = '16px Arial'; ctx.fillStyle = '#069';
-      ctx.fillText('PrivacyCheck', 10, 24);
-      const dataUrl = canvas.toDataURL();
-      const hash = await sha256Hex(dataUrl);
-      return hash;
-    } catch(e) { console.warn('canvas', e); return null; }
-  }
-
-  // --- Audio fingerprint using OfflineAudioContext (no audible output) ---
-  async function audioHash() {
-    try {
-      const ctx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 44100, 44100);
-      const osc = ctx.createOscillator();
-      const filter = ctx.createBiquadFilter();
-      osc.type = 'sine'; osc.frequency.value = 440;
-      filter.type = 'lowpass'; filter.frequency.value = 1000;
-      osc.connect(filter); filter.connect(ctx.destination);
-      osc.start(0);
-      osc.stop(0.5);
-      const buffer = await ctx.startRendering();
-      // get channel data and hash
-      const channel = buffer.getChannelData(0);
-      // convert float32 to uint8 for hashing
-      const u8 = new Uint8Array(channel.length * 4);
-      const view = new DataView(u8.buffer);
-      for (let i = 0; i < channel.length; i++) view.setFloat32(i * 4, channel[i], true);
-      const hash = await sha256Hex(u8);
-      return hash;
-    } catch(e) { console.warn('audio failed', e); return null; }
-  }
-
-  // --- WebRTC ICE candidate collection ---
-  async function checkWebrtcCandidates(timeoutMs = 1500) {
-    const result = { candidates: [], localIPs: [], leak: false, note: null };
-    try {
-      const RTCPeer = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
-      if (!RTCPeer) { result.note = 'RTCPeerConnection not supported'; return result; }
-      const pc = new RTCPeer({ iceServers: [] });
-      const candidates = [];
-      pc.onicecandidate = (ev) => {
-        try {
-          if (ev.candidate && ev.candidate.candidate) candidates.push(ev.candidate.candidate);
-        } catch(e){ /* ignore */ }
-      };
-      // create data channel to trigger gathering
-      try { pc.createDataChannel('d'); } catch(e){ /* ignore */ }
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      // wait for ICE gathering or timeout
-      await new Promise(resolve => {
-        const max = setTimeout(() => resolve(), timeoutMs);
-        pc.onicegatheringstatechange = () => {
-          if (pc.iceGatheringState === 'complete') { clearTimeout(max); resolve(); }
-        };
-      });
-      pc.close();
-      result.candidates = candidates;
-      // extract IPv4 addresses
-      const ips = new Set();
-      for (const c of candidates) {
-        const m = c.match(/((?:25[0-5]|2[0-4]\d|[01]?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|[01]?\d?\d)){3})/);
-        if (m && m[1]) ips.add(m[1]);
-      }
-      result.localIPs = Array.from(ips);
-      result.leak = result.localIPs.length > 0;
-    } catch(e) { console.warn('webrtc error', e); result.note = 'error'; }
-    return result;
-  }
-
-  // --- Tracker/resource scan via performance entries ---
-  function scanTrackers() {
-    const res = [];
-    try {
-      const entries = (performance && performance.getEntriesByType) ? (performance.getEntriesByType('resource') || []) : [];
-      const trackers = ['google-analytics.com','googletagmanager.com','googlesyndication.com','facebook.net','connect.facebook.net','pixel.facebook.com','analytics.twitter.com','analytics.tiktok.com','doubleclick.net','ads.twitter.com'];
-      entries.forEach(r => {
-        trackers.forEach(t => { if (r.name && r.name.includes(t) && !res.includes(t)) res.push(t); });
-      });
-    } catch(e){ console.warn('trackers', e); }
-    return res;
-  }
-
-  // --- DNS (DoH) lookups (indicators) ---
-  async function dohLookup(name = 'example.com') {
-    const results = {};
-    const endpoints = [
-      { name: 'Google', url: `https://dns.google/resolve?name=${encodeURIComponent(name)}&type=A` },
-      { name: 'Cloudflare', url: `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(name)}&type=A&ct=application/dns-json` }
+/* Fonts — using both measurement + FontFaceSet */
+function getFonts(){
+  try{
+    const baseFonts = ["monospace","sans-serif","serif"];
+    const testFonts = [
+      "Arial","Arial Black","Arial Narrow","Arial Unicode MS","Helvetica","Helvetica Neue",
+      "Verdana","Tahoma","Trebuchet MS","Impact","Times New Roman","Georgia","Garamond",
+      "Courier New","Consolas","Lucida Console","Menlo","Monaco","San Francisco","Segoe UI",
+      "Calibri","Cambria","Candara","Constantia","Corbel","Franklin Gothic Medium",
+      "Century Gothic","Gill Sans","Optima","Futura","Palatino","Bookman","Rockwell",
+      "Baskerville","Didot","Brush Script MT","Comic Sans MS","Copperplate","Marker Felt",
+      "Papyrus","Noteworthy","Chalkboard","Skia","Geneva","Lucida Grande","Zapfino",
+      "DejaVu Sans","Liberation Sans","Ubuntu","Cantarell","Roboto","Noto Sans",
+      "Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji"
     ];
-    for (const e of endpoints) {
-      try {
-        const r = await fetch(e.url);
-        if (!r.ok) { results[e.name] = { error: `HTTP ${r.status}` }; continue; }
-        const j = await r.json();
-        let ips = [];
-        if (j && j.Answer && Array.isArray(j.Answer)) ips = j.Answer.map(a => a.data || a.rdata).filter(Boolean);
-        if (j && j.Answers && Array.isArray(j.Answers)) ips = ips.concat(j.Answers.map(a => a.data || a.rdata).filter(Boolean));
-        if (j && j.Answer === undefined && j.Answers === undefined && j.Answer === undefined && j['Answer']) ips = ips;
-        results[e.name] = { ips: ips };
-      } catch(err) {
-        results[e.name] = { error: err.message || 'fetch error' };
-      }
-    }
-    return results;
-  }
-
-  // --- Main orchestrator ---
-  async function runFullScan() {
-    try {
-      setLoadingState(true);
-      setProgress(3, 'starting');
-      setText('quickList', '');
-      setText('rawData', '{}');
-
-      // result object
-      const result = { time: Date.now(), score: 100, details: {} };
-
-      // 1: IP & geo
-      setProgress(8, 'fetching IP & geo');
-      const ipgeo = await getIpAndGeo();
-      result.details.ip = ipgeo;
-      setText('ipVal', ipgeo.publicIp || 'unknown');
-      const geoLabel = (ipgeo.geo.city ? ipgeo.geo.city + ', ' : '') + (ipgeo.geo.region ? ipgeo.geo.region + ', ' : '') + (ipgeo.geo.country_name || ipgeo.geo.country || '—');
-      setText('geoVal', geoLabel);
-      setText('vpnVal', ipgeo.geo.org || ipgeo.geo.org || '—');
-
-      // 2: fingerprint
-      setProgress(20, 'fingerprinting (FingerprintJS)');
-      const fp = await runFingerprint();
-      setText('fpId', fp.id || '—');
-      setText('fpEntropy', (fp.entropyApprox !== null) ? (fp.entropyApprox + ' (approx)') : '—');
-      result.details.fingerprint = fp;
-      // scoring based on rough entropy approximation
-      if (fp.entropyApprox === null) { result.score -= 6; } else if (fp.entropyApprox < 35) { result.score -= 18; } else if (fp.entropyApprox < 60) { result.score -= 8; }
-
-      // 3: canvas
-      setProgress(36, 'canvas fingerprinting');
-      const ch = await canvasHash();
-      setText('canvasHash', ch ? (ch.slice(0, 16) + '...') : 'n/a');
-      result.details.canvas = { hash: ch };
-      if (ch) result.score -= 10;
-
-      // 4: audio
-      setProgress(46, 'audio fingerprint (offline)');
-      const ah = await audioHash();
-      setText('audioHash', ah ? (ah.slice(0, 16) + '...') : 'n/a');
-      result.details.audio = { hash: ah };
-      if (ah) result.score -= 6;
-
-      // 5: WebRTC
-      setProgress(58, 'gathering WebRTC candidates');
-      const webrtc = await checkWebrtcCandidates(1600);
-      const webrtcListEl = document.getElementById('webrtcList');
-      if (webrtcListEl) {
-        webrtcListEl.innerHTML = '';
-        if (webrtc.localIPs && webrtc.localIPs.length) {
-          webrtc.localIPs.forEach(ip => { const d = document.createElement('div'); d.textContent = ip; d.className = 'muted'; webrtcListEl.appendChild(d); });
-        } else {
-          webrtcListEl.textContent = webrtc.note || 'No local addresses found in ICE candidates';
-        }
-      }
-      result.details.webrtc = webrtc;
-      if (webrtc.localIPs && webrtc.localIPs.length) result.score -= 12;
-
-      // 6: trackers
-      setProgress(72, 'scanning resources for trackers');
-      const trackers = scanTrackers();
-      const trackerBox = document.getElementById('trackerList');
-      if (trackerBox) trackerBox.innerHTML = '';
-      if (trackers && trackers.length) {
-        trackers.forEach(t => { const d = document.createElement('div'); d.textContent = t; d.className = 'muted'; if (trackerBox) trackerBox.appendChild(d); });
-        result.score -= 8;
-      } else if (trackerBox) trackerBox.textContent = 'No common trackers detected in loaded resources';
-      result.details.trackers = trackers;
-
-      // 7: DNS DoH checks
-      setProgress(84, 'DoH DNS lookup');
-      const doh = await dohLookup('example.com');
-      result.details.dns = doh;
-      const dnsBox = document.getElementById('dnsList');
-      if (dnsBox) {
-        dnsBox.innerHTML = '';
-        Object.keys(doh).forEach(k => {
-          const item = doh[k];
-          const div = document.createElement('div');
-          if (item.error) div.textContent = `${k}: error (${item.error})`;
-          else div.textContent = `${k}: ${Array.isArray(item.ips) && item.ips.length ? item.ips.join(', ') : 'no IPs in response'}`;
-          div.className = 'muted';
-          dnsBox.appendChild(div);
-        });
-        // [Unverified] simplistic DNS leak indicator: if any DoH response returns our public IP, mark as possible leak
-        try {
-          const pub = result.details.ip && result.details.ip.publicIp;
-          let leak = false;
-          Object.values(doh).forEach(v => { if (v && Array.isArray(v.ips) && v.ips.includes(pub)) leak = true; });
-          if (leak) { result.score -= 12; const note = document.createElement('div'); note.textContent = 'Possible DNS leak detected (indicator)'; note.className = 'muted'; dnsBox.appendChild(note); }
-        } catch(e) { /* ignore */ }
-      }
-
-      // 8: system exposure
-      setProgress(92, 'collecting system info');
-      try {
-        const ua = navigator.userAgent || '—';
-        setText('uaVal', ua);
-        setText('screenVal', (screen && screen.width ? (screen.width + 'x' + screen.height) : '—'));
-        const mem = navigator.deviceMemory || null;
-        const cores = navigator.hardwareConcurrency || null;
-        setText('sysVal', ((mem ? (mem + ' GB ') : '') + (cores ? (cores + ' cores') : '') || '—'));
-        setText('tzVal', (Intl.DateTimeFormat().resolvedOptions && Intl.DateTimeFormat().resolvedOptions().timeZone) || '—');
-        result.details.system = { ua, screen: (screen && screen.width ? (screen.width + 'x' + screen.height) : '—'), memory: mem, cores: cores, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '—' };
-        if (mem) result.score -= 4;
-        if (cores) result.score -= 4;
-      } catch(e) { console.warn('system info', e); }
-
-      // finalize
-      setProgress(98, 'finalizing');
-      result.score = Math.max(0, Math.min(100, Math.round(result.score)));
-      setText('scoreLarge', result.score + '%');
-      setText('lastRun', new Date(result.time).toLocaleString());
-      document.getElementById('rawData').textContent = JSON.stringify(result, null, 2);
-
-      // quick summary display
-      const quick = document.getElementById('quickList');
-      if (quick) {
-        quick.innerHTML = '';
-        const add = (label, status) => {
-          const d = document.createElement('div');
-          d.style.display = 'flex'; d.style.justifyContent = 'space-between'; d.style.padding = '8px 0';
-          d.style.borderBottom = '1px solid var(--border)';
-          const left = document.createElement('div'); left.textContent = label; left.className = 'small';
-          const right = document.createElement('div'); right.textContent = status; right.className = 'small';
-          d.appendChild(left); d.appendChild(right);
-          quick.appendChild(d);
-        };
-        add('Public IP', result.details.ip.publicIp || 'unknown');
-        add('Fingerprint entropy', (result.details.fingerprint && result.details.fingerprint.entropyApprox) ? (result.details.fingerprint.entropyApprox + ' (approx)') : '—');
-        add('Trackers found', (result.details.trackers ? result.details.trackers.length : 0));
-        add('WebRTC leak', (result.details.webrtc && result.details.webrtc.localIPs && result.details.webrtc.localIPs.length) ? 'yes' : 'no');
-      }
-
-      // update radar chart
-      if (radarChart) {
-        radarChart.data.datasets[0].data = [
-          Math.max(0, 20 - (result.details.ip && result.details.ip.geo && result.details.ip.geo.org ? 0 : 5)),
-          Math.max(0, 20 - ((result.details.fingerprint && result.details.fingerprint.entropyApprox && result.details.fingerprint.entropyApprox > 60) ? 0 : 6)),
-          Math.max(0, 20 - ((result.details.trackers && result.details.trackers.length) ? 8 : 0)),
-          Math.max(0, 20 - ((result.details.system && (result.details.system.memory || result.details.system.cores)) ? 6 : 0)),
-          Math.max(0, 20 - ((result.details.dns && Object.keys(result.details.dns || {}).length) ? 6 : 0))
-        ];
-        radarChart.update();
-      }
-
-      saveToHistory(result);
-      setProgress(100, 'done');
-      setLoadingState(false);
-
-      // Show alert if score is below 90
-      if (result.score < 90) {
-        setTimeout(() => {
-          showScoreAlert(result.score);
-        }, 500);
-      }
-    } catch (err) {
-      console.error('scan failed', err);
-      setProgress(0, 'failed');
-      setText('rawData', JSON.stringify({ error: err.message || String(err) }, null, 2));
-      setLoadingState(false);
-    }
-  }
-
-  // --- Load / wire UI ---
-  window.addEventListener('DOMContentLoaded', () => {
-    initChart();
-    loadHistory();
-    const runBtn = document.getElementById('runBtn');
-    if (runBtn) runBtn.addEventListener('click', () => { runFullScan(); });
-
-    const exportBtn = document.getElementById('exportBtn');
-    if (exportBtn) exportBtn.addEventListener('click', () => {
-      try {
-        const data = document.getElementById('rawData').textContent || '{}';
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'pa_scan_' + Date.now() + '.json';
-        a.click();
-        URL.revokeObjectURL(url);
-      } catch(e) { console.warn('export', e); }
-    });
-
-    const clearBtn = document.getElementById('clearHistory');
-    if (clearBtn) clearBtn.addEventListener('click', () => { clearHistory(); });
-
-    // Modal event handlers
-    const letMeCookedBtn = document.getElementById('letMeCooked');
-    if (letMeCookedBtn) {
-      letMeCookedBtn.addEventListener('click', () => {
-        closeModal('scoreAlertModal');
-      });
-    }
-
-    const makeMeAnonymousBtn = document.getElementById('makeMeAnonymous');
-    if (makeMeAnonymousBtn) {
-      makeMeAnonymousBtn.addEventListener('click', () => {
-        closeModal('scoreAlertModal');
-        showSecurityGuide();
-      });
-    }
-
-    const closeGuideBtn = document.getElementById('closeGuide');
-    if (closeGuideBtn) {
-      closeGuideBtn.addEventListener('click', () => {
-        closeModal('securityGuideModal');
-      });
-    }
-
-    const rescanAfterGuideBtn = document.getElementById('rescanAfterGuide');
-    if (rescanAfterGuideBtn) {
-      rescanAfterGuideBtn.addEventListener('click', () => {
-        closeModal('securityGuideModal');
-        runFullScan();
-      });
-    }
-
-    // Close modals when clicking outside
-    document.addEventListener('click', (e) => {
-      if (e.target.id === 'scoreAlertModal') {
-        closeModal('scoreAlertModal');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return [];
+    const text = "mmmmmmmmmmlli WwQq@";
+    const size = "72px";
+    const baseWidths = {};
+    baseFonts.forEach(bf => { ctx.font = size + " " + bf; baseWidths[bf] = ctx.measureText(text).width; });
+    const detected = [];
+    testFonts.forEach(tf => {
+      for (const bf of baseFonts){
+        ctx.font = size + " " + tf + "," + bf;
+        if (ctx.measureText(text).width !== baseWidths[bf]){ detected.push(tf); return; }
       }
     });
+    return detected;
+  }catch(e){ return []; }
+}
 
-    // Load saved config tokens if present
-    try {
-      const t = localStorage.getItem('pa_ipinfo_token'); if (t) document.getElementById('ipinfoToken').value = t;
-      const k = localStorage.getItem('pa_ipqs_key'); if (k) document.getElementById('ipqsKey').value = k;
-    } catch(e) { /* ignore */ }
-    
-    // Save tokens when they change
-    const ipinfoToken = document.getElementById('ipinfoToken');
-    const ipqsKey = document.getElementById('ipqsKey');
-    
-    if (ipinfoToken) {
-      ipinfoToken.addEventListener('change', () => {
-        try {
-          localStorage.setItem('pa_ipinfo_token', ipinfoToken.value);
-        } catch(e) { /* ignore */ }
-      });
+/* Math / trig constants */
+function getMathFP(){
+  try{
+    return {
+      sin1: Math.sin(1), cos1: Math.cos(1), tan1: Math.tan(1),
+      log2: Math.log(2), exp1: Math.exp(1), atan1: Math.atan(1),
+      sqrt2: Math.sqrt(2), pow2_10: Math.pow(2,10),
+      sinh1: Math.sinh(1), cosh1: Math.cosh(1), tanh1: Math.tanh(1),
+      e: Math.E, pi: Math.PI
+    };
+  }catch(e){ return null; }
+}
+
+/* Codecs — accurate */
+function getCodecs(){
+  try{
+    const v = document.createElement("video");
+    const a = document.createElement("audio");
+    const videoTypes = [
+      { label: "H.264 Baseline",   type: 'video/mp4; codecs="avc1.42E01E"' },
+      { label: "H.264 High",       type: 'video/mp4; codecs="avc1.64001F"' },
+      { label: "H.265 / HEVC",     type: 'video/mp4; codecs="hev1.1.6.L93.B0"' },
+      { label: "VP8",              type: 'video/webm; codecs="vp8"' },
+      { label: "VP9",              type: 'video/webm; codecs="vp9"' },
+      { label: "AV1",              type: 'video/mp4; codecs="av01.0.05M.08"' },
+      { label: "Theora",           type: 'video/ogg; codecs="theora"' }
+    ];
+    const audioTypes = [
+      { label: "AAC",     type: 'audio/mp4; codecs="mp4a.40.2"' },
+      { label: "MP3",     type: "audio/mpeg" },
+      { label: "Opus",    type: 'audio/webm; codecs="opus"' },
+      { label: "Vorbis",  type: 'audio/webm; codecs="vorbis"' },
+      { label: "FLAC",    type: "audio/flac" },
+      { label: "PCM/WAV", type: "audio/wav" }
+    ];
+    const v2 = videoTypes.map(c => ({ label: c.label, support: v.canPlayType(c.type) || "no" })).filter(x => x.support !== "");
+    const a2 = audioTypes.map(c => ({ label: c.label, support: a.canPlayType(c.type) || "no" })).filter(x => x.support !== "");
+    return { video: v2, audio: a2 };
+  }catch(e){ return { video: [], audio: [] }; }
+}
+
+/* Speech synthesis voices (leaks installed locales) */
+function getVoices(){
+  try{
+    if (!window.speechSynthesis || !speechSynthesis.getVoices) return [];
+    return speechSynthesis.getVoices().map(v => ({ name: v.name, lang: v.lang, local: v.localService }));
+  }catch(e){ return []; }
+}
+
+/* Battery */
+async function getBattery(){
+  try{
+    if (!navigator.getBattery) return null;
+    const b = await navigator.getBattery();
+    return {
+      charging: b.charging,
+      level: Math.round((b.level || 0) * 100),
+      chargingTime: b.chargingTime,
+      dischargingTime: b.dischargingTime
+    };
+  }catch(e){ return null; }
+}
+
+/* Media devices — counts only (no permission) */
+async function getMediaDevices(){
+  try{
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return null;
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const counts = { audioinput: 0, audiooutput: 0, videoinput: 0 };
+    const detail = [];
+    devices.forEach(d => {
+      if (counts[d.kind] !== undefined) counts[d.kind]++;
+      detail.push({ kind: d.kind, label: d.label || "(label hidden)", groupId: d.groupId ? d.groupId.slice(0, 8) + "…" : null });
+    });
+    return { counts, total: devices.length, detail };
+  }catch(e){ return null; }
+}
+
+/* Media capabilities — audio pipeline */
+async function getAudioPipeline(){
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    const ctx = new AC();
+    const out = {
+      sampleRate: ctx.sampleRate,
+      state: ctx.state,
+      baseLatency: ctx.baseLatency,
+      outputLatency: ctx.outputLatency,
+      maxChannelCount: (ctx.destination && ctx.destination.maxChannelCount) || null
+    };
+    try { ctx.close(); } catch(e){}
+    return out;
+  }catch(e){ return null; }
+}
+
+/* Storage */
+async function getStorageInfo(){
+  const out = { estimate: null, databases: null, caches: null, serviceWorkers: null };
+  try{
+    if (navigator.storage && navigator.storage.estimate){
+      const est = await navigator.storage.estimate();
+      out.estimate = { usage: est.usage, quota: est.quota };
     }
-    
-    if (ipqsKey) {
-      ipqsKey.addEventListener('change', () => {
-        try {
-          localStorage.setItem('pa_ipqs_key', ipqsKey.value);
-        } catch(e) { /* ignore */ }
+  }catch(e){}
+  try{
+    if (indexedDB.databases){
+      out.databases = await indexedDB.databases();
+    }
+  }catch(e){}
+  try{
+    if (window.caches && caches.keys){
+      out.caches = await caches.keys();
+    }
+  }catch(e){}
+  try{
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      out.serviceWorkers = regs.map(r => (r.scope || "").slice(0, 60));
+    }
+  }catch(e){}
+  return out;
+}
+
+/* Permissions */
+async function getPermissions(){
+  const list = ["geolocation","notifications","camera","microphone","clipboard-read","clipboard-write","persistent-storage","midi","background-sync","accelerometer","gyroscope","magnetometer"];
+  const out = {};
+  await Promise.all(list.map(async (p) => {
+    try{
+      if (navigator.permissions && navigator.permissions.query){
+        const r = await navigator.permissions.query({ name: p });
+        out[p] = r.state;
+      } else out[p] = "unsupported";
+    }catch(e){ out[p] = "unavailable"; }
+  }));
+  return out;
+}
+
+/* Network */
+function getConnection(){
+  try{
+    const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (!c) return null;
+    return {
+      effectiveType: c.effectiveType || null,
+      type: c.type || null,
+      downlink: (typeof c.downlink === "number") ? c.downlink : null,
+      downlinkMax: (typeof c.downlinkMax === "number") ? c.downlinkMax : null,
+      rtt: (typeof c.rtt === "number") ? c.rtt : null,
+      saveData: !!c.saveData
+    };
+  }catch(e){ return null; }
+}
+
+/* Locale & Intl */
+function getIntlInfo(){
+  try{
+    const dt = Intl.DateTimeFormat().resolvedOptions();
+    let numberingSystem = null, calendar = null;
+    try{ numberingSystem = new Intl.NumberFormat().resolvedOptions().numberingSystem; }catch(e){}
+    try{ calendar = dt.calendar; }catch(e){}
+    const currencyFmt = (function(){
+      try{ return new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).resolvedOptions().currency; }
+      catch(e){ return null; }
+    })();
+    const firstDay = (function(){
+      try{
+        const locale = new Intl.Locale(dt.locale);
+        return locale.weekInfo ? locale.weekInfo.firstDay : null;
+      }catch(e){ return null; }
+    })();
+    return { ...dt, numberingSystem, currency: currencyFmt, firstDayOfWeek: firstDay };
+  }catch(e){ return null; }
+}
+
+/* Browser surface */
+function getBrowserSurface(){
+  const plugins = [];
+  try{
+    if (navigator.plugins){
+      for (let i = 0; i < navigator.plugins.length; i++){
+        const p = navigator.plugins[i];
+        plugins.push({ name: p.name, description: p.description, filename: p.filename, length: p.length });
+      }
+    }
+  }catch(e){}
+  const mimes = [];
+  try{
+    if (navigator.mimeTypes){
+      for (let i = 0; i < navigator.mimeTypes.length; i++){
+        const m = navigator.mimeTypes[i];
+        mimes.push({ type: m.type, suffixes: m.suffixes, description: m.description });
+      }
+    }
+  }catch(e){}
+  return { plugins, mimeTypes: mimes };
+}
+
+/* Feature detection */
+function getFeatureDetection(){
+  const checks = {
+    webgl: !!document.createElement("canvas").getContext("webgl"),
+    webgl2: !!document.createElement("canvas").getContext("webgl2"),
+    webgpu: !!navigator.gpu,
+    webrtc: !!(window.RTCPeerConnection || window.webkitRTCPeerConnection),
+    serviceWorker: "serviceWorker" in navigator,
+    webAssembly: typeof WebAssembly === "object",
+    sharedArrayBuffer: typeof SharedArrayBuffer === "function",
+    crossOriginIsolated: window.crossOriginIsolated || false,
+    webAuthn: !!(window.PublicKeyCredential),
+    bluetooth: !!navigator.bluetooth,
+    usb: !!navigator.usb,
+    serial: !!navigator.serial,
+    hid: !!navigator.hid,
+    nfc: "NDEFReader" in window,
+    geolocation: !!navigator.geolocation,
+    clipboard: !!navigator.clipboard,
+    notifications: "Notification" in window,
+    vibration: "vibrate" in navigator,
+    speechSynthesis: "speechSynthesis" in window,
+    speechRecognition: !!(window.SpeechRecognition || window.webkitSpeechRecognition),
+    indexedDB: "indexedDB" in window,
+    push: "PushManager" in window,
+    wakeLock: "wakeLock" in navigator,
+    webShare: "share" in navigator,
+    credentials: !!(navigator.credentials),
+    paymentRequest: "PaymentRequest" in window,
+    gamepad: "getGamepads" in navigator,
+    xr: !!(navigator.xr)
+  };
+  const mediaQueries = {
+    "prefers-color-scheme: dark":  window.matchMedia("(prefers-color-scheme: dark)").matches,
+    "prefers-color-scheme: light": window.matchMedia("(prefers-color-scheme: light)").matches,
+    "prefers-reduced-motion":      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    "prefers-contrast: more":      window.matchMedia("(prefers-contrast: more)").matches,
+    "prefers-reduced-data":        window.matchMedia("(prefers-reduced-data: reduce)").matches,
+    "hover: hover":                window.matchMedia("(hover: hover)").matches,
+    "pointer: fine":               window.matchMedia("(pointer: fine)").matches,
+    "any-pointer: fine":           window.matchMedia("(any-pointer: fine)").matches,
+    "orientation: portrait":       window.matchMedia("(orientation: portrait)").matches,
+    "forced-colors: active":       window.matchMedia("(forced-colors: active)").matches,
+    "display-mode: standalone":    window.matchMedia("(display-mode: standalone)").matches
+  };
+  return { checks, mediaQueries };
+}
+
+/* Canvas hash — richer sample */
+async function canvasHash(){
+  try{
+    const canvas = document.createElement("canvas");
+    canvas.width = 320; canvas.height = 80;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    const grad = ctx.createLinearGradient(0, 0, 320, 80);
+    grad.addColorStop(0, "#f60"); grad.addColorStop(1, "#069");
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, 320, 80);
+    ctx.textBaseline = "alphabetic";
+    ctx.font = "18px Arial";
+    ctx.fillStyle = "rgba(255,255,255,.7)";
+    ctx.fillText("Vibex canvas probe 🎨 — 0O1lI|", 12, 30);
+    ctx.strokeStyle = "rgba(0,0,0,.4)";
+    ctx.beginPath(); ctx.arc(240, 40, 25, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = "rgba(120,60,200,.6)";
+    ctx.beginPath(); ctx.moveTo(280, 10); ctx.lineTo(310, 60); ctx.lineTo(250, 60); ctx.closePath(); ctx.fill();
+    ctx.shadowColor = "rgba(0,0,0,.5)"; ctx.shadowBlur = 4;
+    ctx.fillText("abcABC012", 12, 64);
+    const dataUrl = canvas.toDataURL();
+    return { hash: await sha256Hex(dataUrl), size: dataUrl.length };
+  }catch(e){ return null; }
+}
+
+/* Audio hash */
+async function audioHash(){
+  try{
+    const Ctx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (!Ctx) return null;
+    const ctx = new Ctx(1, 44100, 44100);
+    const osc = ctx.createOscillator();
+    const filter = ctx.createBiquadFilter();
+    const comp = ctx.createDynamicsCompressor();
+    osc.type = "triangle"; osc.frequency.value = 10000;
+    filter.type = "lowpass"; filter.frequency.value = 1000;
+    osc.connect(filter); filter.connect(comp); comp.connect(ctx.destination);
+    osc.start(0); osc.stop(0.5);
+    const buffer = await ctx.startRendering();
+    const channel = buffer.getChannelData(0);
+    const u8 = new Uint8Array(channel.length * 4);
+    const view = new DataView(u8.buffer);
+    for (let i = 0; i < channel.length; i++) view.setFloat32(i * 4, channel[i], true);
+    return await sha256Hex(u8);
+  }catch(e){ return null; }
+}
+
+/* WebRTC */
+async function checkWebrtcCandidates(timeoutMs = 2200){
+  const result = { candidates: [], localIPs: [], localIPv6: [], mDNS: [], note: null, supported: false, mdnsObfuscated: false };
+  try{
+    const RTCPeer = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
+    if (!RTCPeer){ result.note = "WebRTC is not available in this browser."; return result; }
+    result.supported = true;
+
+    const pc = new RTCPeer({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+    const candidates = [];
+    pc.onicecandidate = (ev) => {
+      if (ev.candidate && ev.candidate.candidate) candidates.push(ev.candidate.candidate);
+    };
+    try { pc.createDataChannel("vibex"); } catch(e){}
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+
+    await new Promise((resolve) => {
+      const max = setTimeout(resolve, timeoutMs);
+      pc.onicegatheringstatechange = () => {
+        if (pc.iceGatheringState === "complete"){ clearTimeout(max); resolve(); }
+      };
+    });
+    try { pc.close(); } catch(e){}
+
+    result.candidates = candidates;
+    const v4 = new Set(), v6 = new Set(), mdns = new Set();
+    for (const c of candidates){
+      if (c.indexOf(".local") !== -1){ result.mdnsObfuscated = true; }
+      const m4 = c.match(/((?:25[0-5]|2[0-4]\d|[01]?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|[01]?\d?\d)){3})/);
+      if (m4 && m4[1] && m4[1] !== "0.0.0.0") v4.add(m4[1]);
+      const m6 = c.match(/([a-f0-9]{1,4}(?::[a-f0-9]{1,4}){7})/i);
+      if (m6 && m6[1] && !m6[1].toLowerCase().startsWith("0000")) v6.add(m6[1]);
+      const mm = c.match(/[a-f0-9-]+\.local/);
+      if (mm) mdns.add(mm[0]);
+    }
+    result.localIPs = Array.from(v4);
+    result.localIPv6 = Array.from(v6);
+    result.mDNS = Array.from(mdns);
+  }catch(e){
+    result.note = "WebRTC gathering failed.";
+  }
+  return result;
+}
+
+/* Trackers */
+function scanTrackers(){
+  const found = [];
+  const signatures = [
+    { domain: "google-analytics.com", name: "Google Analytics" },
+    { domain: "googletagmanager.com", name: "Google Tag Manager" },
+    { domain: "googlesyndication.com", name: "Google Ads" },
+    { domain: "doubleclick.net", name: "DoubleClick" },
+    { domain: "connect.facebook.net", name: "Facebook Connect" },
+    { domain: "facebook.net", name: "Facebook" },
+    { domain: "pixel.facebook.com", name: "Facebook Pixel" },
+    { domain: "analytics.twitter.com", name: "Twitter Analytics" },
+    { domain: "ads.twitter.com", name: "Twitter Ads" },
+    { domain: "analytics.tiktok.com", name: "TikTok Analytics" },
+    { domain: "hotjar.com", name: "Hotjar" },
+    { domain: "mixpanel.com", name: "Mixpanel" },
+    { domain: "segment.io", name: "Segment" },
+    { domain: "amplitude.com", name: "Amplitude" },
+    { domain: "hubspot.com", name: "HubSpot" },
+    { domain: "newrelic.com", name: "New Relic" },
+    { domain: "sentry.io", name: "Sentry" },
+    { domain: "intercom.io", name: "Intercom" },
+    { domain: "criteo.com", name: "Criteo" },
+    { domain: "taboola.com", name: "Taboola" },
+    { domain: "outbrain.com", name: "Outbrain" }
+  ];
+  try{
+    const entries = (performance && performance.getEntriesByType) ? (performance.getEntriesByType("resource") || []) : [];
+    entries.forEach((r) => {
+      signatures.forEach((s) => {
+        if (r.name && r.name.indexOf(s.domain) !== -1 && !found.find(f => f.domain === s.domain)) found.push(s);
       });
+    });
+  }catch(e){}
+  return found;
+}
+
+/* DNS via DoH */
+async function dohLookup(name = "example.com"){
+  const endpoints = [
+    { name: "Google DNS", url: `https://dns.google/resolve?name=${encodeURIComponent(name)}&type=A` },
+    { name: "Cloudflare", url: `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(name)}&type=A&ct=application/dns-json` },
+    { name: "Quad9",      url: `https://dns.quad9.net:5053/dns-query?name=${encodeURIComponent(name)}&type=A&ct=application/dns-json` }
+  ];
+  const results = {};
+  await Promise.all(endpoints.map(async (e) => {
+    try{
+      const r = await fetch(e.url, { headers: { accept: "application/dns-json" } });
+      if (!r.ok){ results[e.name] = { error: "HTTP " + r.status }; return; }
+      const j = await r.json();
+      const answers = Array.isArray(j.Answer) ? j.Answer : [];
+      const ips = answers.filter(a => a.type === 1).map(a => a.data).filter(Boolean);
+      results[e.name] = { ips, resolver: j.AD ? "DNSSEC-validated" : null };
+    }catch(err){ results[e.name] = { error: err.message || "network error" }; }
+  }));
+  return results;
+}
+
+/* Anti-fingerprint / privacy-tool detection */
+function detectPrivacyTools(webgl, adv){
+  const signals = [];
+  try{
+    // Common spoofed user agents
+    const ua = navigator.userAgent || "";
+    if (/headless|phantom|puppeteer|playwright|selenium/i.test(ua)) signals.push("Automation framework detected in UA");
+    if (!navigator.webdriver && /headless/i.test(ua)) signals.push("Headless mode");
+
+    // Missing / spoofed WebGL
+    if (webgl && webgl.renderer && /swiftshader|llvmpipe|virtualbox|vmware|parallels|qemu|virtual/i.test(webgl.renderer)){
+      signals.push("Software or VM renderer (" + webgl.renderer + ")");
+    }
+
+    // Timezone mismatch
+    const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const offset = new Date().getTimezoneOffset();
+    signals.push("Browser TZ: " + browserTz + " (UTC" + (offset <= 0 ? "+" : "-") + Math.abs(offset/60) + ")");
+
+    // Fonts count as a signal
+    if (adv && adv.fonts){
+      if (adv.fonts.length === 0) signals.push("No fonts detected — likely locked-down browser or spoof");
+      else if (adv.fonts.length > 40) signals.push("High font count (" + adv.fonts.length + ") — full OS font set exposed");
+    }
+
+    // Media devices
+    if (adv && adv.media && adv.media.total === 0){
+      signals.push("No media devices enumerated — hardened or sandboxed");
+    }
+
+    // Plugin count
+    if (navigator.plugins && navigator.plugins.length === 0 && !/safari|firefox/i.test(ua)){
+      signals.push("Zero plugins — likely hardened or spoofed Chrome");
+    }
+  }catch(e){}
+  return signals;
+}
+
+/* One-stop advanced collector */
+async function collectAdvanced(){
+  const [battery, media, storage, permissions] = await Promise.all([
+    getBattery(), getMediaDevices(), getStorageInfo(), getPermissions()
+  ]);
+  const webgl = getWebGL();
+  const fonts = getFonts();
+  const mathFP = getMathFP();
+  const codecs = getCodecs();
+  const voices = getVoices();
+  const connection = getConnection();
+  const intlInfo = getIntlInfo();
+  const browserSurface = getBrowserSurface();
+  const features = getFeatureDetection();
+  const clientHints = await getClientHints();
+  const audioPipe = await getAudioPipeline();
+
+  return {
+    webgl, fonts, math: mathFP, codecs, voices, connection,
+    intl: intlInfo, browserSurface, features, clientHints,
+    audioPipeline: audioPipe,
+    battery, media, storage, permissions
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCORING
+   ═══════════════════════════════════════════════════════════ */
+const HOSTING_RE = /vpn|proxy|hosting|datacenter|data center|server|cloud|digitalocean|linode|ovh|hetzner|m247|mullvad|nord|express|surfshark|private internet|amazon|google|microsoft|azure|oracle|leaseweb|contabo|choopa|vultr|scaleway|upcloud/;
+
+function estimateEntropyBits(d){
+  let bits = 0;
+  const fp = d.fingerprint || {};
+  const gl = d.webgl || {};
+  const adv = d.advanced || {};
+  const sys = d.system || {};
+
+  if (fp.componentsCount) bits += fp.componentsCount * 2.4;
+  if (gl.renderer) bits += 6;
+  if (gl.unmaskedRenderer) bits += 3;
+  if (d.canvas && d.canvas.hash) bits += 6;
+  if (d.audio && d.audio.hash) bits += 4;
+  if (adv.fonts && adv.fonts.length) bits += Math.log2(Math.max(1, adv.fonts.length)) + 3;
+  if (adv.math) bits += 3;
+  if (adv.codecs && (adv.codecs.video?.length || adv.codecs.audio?.length)) bits += 2;
+  if (adv.voices && adv.voices.length) bits += 2;
+  if (adv.audioPipeline && adv.audioPipeline.sampleRate) bits += 2;
+  if (sys.screen) bits += 5;
+  if (sys.timezone) bits += 4;
+  if (sys.languages && sys.languages.length) bits += 3;
+  if (sys.cores) bits += 1.5;
+  if (sys.memory) bits += 1;
+  if (sys.pixelRatio) bits += 1.5;
+  if (sys.colorDepth) bits += 1;
+  return Math.round(bits);
+}
+
+function computeCategories(result){
+  const d = result.details;
+  const ip = d.ip || {};
+
+  /* Connection & IP — 20 */
+  let connection = 20;
+  if (ip.publicIp && ip.publicIp !== "unknown"){
+    const org = String(ip.org || "").toLowerCase();
+    connection = HOSTING_RE.test(org) ? 18 : 4;
+  }
+  if (ip.latitude && ip.longitude) connection = Math.max(0, connection - 1);
+
+  /* Fingerprint — 25 */
+  const fp = d.fingerprint || {};
+  const entropy = fp.entropyApprox;
+  let fingerprint = 25;
+  if (entropy === null || entropy === undefined) fingerprint = 17;
+  else if (entropy >= 70) fingerprint = 4;
+  else if (entropy >= 45) fingerprint = 10;
+  else if (entropy >= 25) fingerprint = 16;
+  else fingerprint = 21;
+  if (d.canvas && d.canvas.hash) fingerprint -= 3;
+  if (d.audio && d.audio.hash) fingerprint -= 2;
+  if (d.webgl && d.webgl.unmaskedRenderer) fingerprint -= 2;
+  if (d.advanced && d.advanced.fonts && d.advanced.fonts.length > 5) fingerprint -= 2;
+  fingerprint = clamp(fingerprint, 0, 25);
+
+  /* WebRTC — 10 */
+  const wr = d.webrtc || {};
+  const leakCount = (wr.localIPs || []).length + (wr.localIPv6 || []).length;
+  let webrtc = 10;
+  if (leakCount) webrtc = Math.max(0, 10 - leakCount * 4);
+  if (!wr.supported) webrtc = 10;
+  const media = d.advanced && d.advanced.media;
+  if (media && media.total > 0) webrtc = Math.max(0, webrtc - 1);
+
+  /* Trackers & storage — 15 */
+  const trackers = d.trackers || [];
+  let trackersScore = 15;
+  if (trackers.length) trackersScore = Math.max(0, 15 - trackers.length * 3);
+  if (navigator.cookieEnabled) trackersScore = Math.max(0, trackersScore - 2);
+  const storage = d.advanced && d.advanced.storage;
+  if (storage && storage.estimate && storage.estimate.usage > 0) trackersScore = Math.max(0, trackersScore - 1);
+
+  /* System & hardware — 20 */
+  const sys = d.system || {};
+  const adv = d.advanced || {};
+  let system = 20;
+  if (sys.memory) system -= 3;
+  if (sys.cores) system -= 3;
+  if (sys.ua) system -= 2;
+  if (sys.screen) system -= 2;
+  if (sys.pixelRatio && sys.pixelRatio !== 1) system -= 2;
+  if (sys.languages && sys.languages.length) system -= 2;
+  if (adv.battery) system -= 2;
+  if (adv.connection && adv.connection.effectiveType) system -= 2;
+  if (adv.media && adv.media.total > 0) system -= 2;
+  system = clamp(system, 0, 20);
+
+  /* DNS — 10 */
+  const dns = d.dns || {};
+  let dnsScore = 10;
+  const dnsErrors = Object.values(dns).filter(v => v && v.error).length;
+  if (dnsErrors >= 2) dnsScore = 6;
+  else if (dnsErrors >= 1) dnsScore = 8;
+
+  const total = connection + fingerprint + webrtc + trackersScore + system + dnsScore;
+
+  return {
+    connection:  { score: connection,  max: 20 },
+    fingerprint: { score: fingerprint, max: 25 },
+    webrtc:      { score: webrtc,      max: 10 },
+    trackers:    { score: trackersScore, max: 15 },
+    system:      { score: system,      max: 20 },
+    dns:         { score: dnsScore,    max: 10 },
+    total: clamp(Math.round(total), 0, 100)
+  };
+}
+function statusFor(score, max){
+  const r = max ? score / max : 1;
+  if (r >= 0.8) return "good";
+  if (r >= 0.5) return "warn";
+  return "bad";
+}
+const STATUS_LABEL = { good: "Good", warn: "Weak", bad: "Critical" };
+
+/* ═══════════════════════════════════════════════════════════
+   CHART
+   ═══════════════════════════════════════════════════════════ */
+function scoreColor(s){
+  if (s >= 90) return "#30d158";
+  if (s >= 70) return "#0a84ff";
+  if (s >= 50) return "#ffd60a";
+  return "#ff453a";
+}
+function initChart(){
+  const canvas = $("scoreChart");
+  if (!canvas || !window.Chart) return;
+  if (scoreChart){ try{ scoreChart.destroy(); }catch(e){} scoreChart = null; }
+  const track = isLight() ? "rgba(0,0,0,.08)" : "rgba(255,255,255,.09)";
+  scoreChart = new Chart(canvas.getContext("2d"), {
+    type: "doughnut",
+    data: { datasets: [{ data: [0,100], backgroundColor: [scoreColor(0), track], borderWidth:0, hoverBackgroundColor:[scoreColor(0), track] }] },
+    options: {
+      responsive: true, maintainAspectRatio: true, cutout: "82%",
+      animation: { duration: 900, easing: "easeOutQuart" },
+      plugins: { legend: { display: false }, tooltip: { enabled: false } }
     }
   });
-  </script>
-</body>
+}
+function updateChart(score){
+  if (!scoreChart) return;
+  const track = isLight() ? "rgba(0,0,0,.08)" : "rgba(255,255,255,.09)";
+  const c = scoreColor(score);
+  scoreChart.data.datasets[0].data = [score, Math.max(0, 100 - score)];
+  scoreChart.data.datasets[0].backgroundColor = [c, track];
+  scoreChart.data.datasets[0].hoverBackgroundColor = [c, track];
+  scoreChart.update();
+}
+window.addEventListener("themechange", () => {
+  if (!scoreChart) return;
+  const track = isLight() ? "rgba(0,0,0,.08)" : "rgba(255,255,255,.09)";
+  scoreChart.data.datasets[0].backgroundColor = [scoreColor(lastResult ? lastResult.score : 0), track];
+  scoreChart.data.datasets[0].hoverBackgroundColor = scoreChart.data.datasets[0].backgroundColor;
+  scoreChart.update();
+});
 
+/* ═══════════════════════════════════════════════════════════
+   RENDERING
+   ═══════════════════════════════════════════════════════════ */
+function setStage(pct, text){
+  const bar = $("scanBar");
+  if (bar) bar.style.width = clamp(pct, 0, 100) + "%";
+  const s = $("scanStatus");
+  if (s) s.textContent = text || "";
+}
+function verdictFor(score){
+  if (score >= 90) return { title: "Anonymous", sub: "Your browser blends in. Few signals here stand out as strong identifiers.", color: "var(--ok)" };
+  if (score >= 75) return { title: "Nearly anonymous", sub: "A handful of signals still stand out. Tightening fingerprint and DNS lifts this higher.", color: "var(--text)" };
+  if (score >= 50) return { title: "Partially exposed", sub: "Several identifiers are visible to every site you visit. Follow the guide to reduce them.", color: "var(--warn)" };
+  return { title: "Highly identifiable", sub: "Your browser is easy to single out. Every tracker you encounter can link you across sites.", color: "var(--err)" };
+}
+function kvRow(label, value, cls){
+  return `<div class="kv"><span class="k">${esc(label)}</span><span class="v ${cls||""}">${esc(value)}</span></div>`;
+}
+function findingCard(opts){
+  const rowsHtml = (opts.rows || []).join("");
+  const chipsHtml = (opts.chips && opts.chips.length)
+    ? `<div class="chips">${opts.chips.map(c => {
+        if (typeof c === "object" && c !== null) return `<span class="chip ${c.cls||""}">${esc(c.label)}</span>`;
+        return `<span class="chip">${esc(c)}</span>`;
+      }).join("")}</div>`
+    : "";
+  const noteHtml = opts.note ? `<div class="f-note ${opts.noteCls||""}">${esc(opts.note)}</div>` : "";
+  const dangerCls = opts.danger ? " danger" : "";
+  return `
+    <details class="finding${dangerCls}"${opts.open ? " open" : ""}>
+      <summary>
+        <span class="f-dot ${opts.status}"></span>
+        <span class="f-name">${esc(opts.name)}</span>
+        <span class="f-status ${opts.status}">${STATUS_LABEL[opts.status]}</span>
+        <svg class="f-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div class="f-body">${rowsHtml}${chipsHtml}${noteHtml}</div>
+    </details>
+  `;
+}
+const trunc = (s, n) => { s = String(s||""); return s.length > n ? s.slice(0, n) + "…" : s; };
+
+function renderResults(result){
+  const c = result.categories;
+  const d = result.details;
+
+  /* Verdict */
+  const v = verdictFor(result.score);
+  $("scoreNum").textContent = result.score + "%";
+  $("scoreNum").style.color = v.color;
+  $("scoreVerdict").textContent = v.title;
+  $("scoreVerdict").style.color = v.color;
+  $("scoreSub").textContent = v.sub;
+  updateChart(result.score);
+
+  /* Mini stats */
+  const entropyBits = estimateEntropyBits(d);
+  const fp = d.fingerprint || {};
+  const trackers = d.trackers || [];
+  const wr = d.webrtc || {};
+  const leaks = (wr.localIPs || []).length + (wr.localIPv6 || []).length;
+  const fontsN = (d.advanced && d.advanced.fonts) ? d.advanced.fonts.length : 0;
+
+  const stats = [
+    { n: entropyBits + " bits", l: "Entropy" },
+    { n: fontsN, l: "Fonts", danger: fontsN > 40 },
+    { n: trackers.length, l: "Trackers", danger: trackers.length > 0 },
+    { n: leaks, l: "IP leaks", danger: leaks > 0 }
+  ];
+  $("scoreStats").innerHTML = stats.map(s =>
+    `<div class="stat${s.danger ? " danger" : ""}"><div class="stat-num">${esc(s.n)}</div><div class="stat-lbl">${esc(s.l)}</div></div>`
+  ).join("");
+
+  /* Critical banner */
+  if (result.score < 45){
+    $("criticalBanner").classList.add("is-on");
+    $("criticalText").textContent = "You are highly identifiable. Every site you visit can single you out.";
+  } else {
+    $("criticalBanner").classList.remove("is-on");
+  }
+
+  const cards = [];
+
+  /* ───── 1. Connection & IP ───── */
+  const ip = d.ip || {};
+  const hasLocation = ip.city || ip.latitude;
+  cards.push(findingCard({
+    name: "Connection & IP — real location exposed",
+    status: statusFor(c.connection.score, c.connection.max),
+    open: true,
+    danger: !!(ip.publicIp && ip.publicIp !== "unknown"),
+    rows: [
+      kvRow("Public IP", ip.publicIp || "unknown", ip.publicIp && ip.publicIp !== "unknown" ? "bad" : "good"),
+      ip.ipv6 ? kvRow("IPv6", ip.ipv6, "bad") : "",
+      kvRow("City", ip.city || "—", ip.city ? "bad" : ""),
+      kvRow("Region", ip.region || "—", "plain"),
+      kvRow("Country", ip.country ? (ip.country + (ip.countryCode ? " (" + ip.countryCode + ")" : "")) : "—", "plain"),
+      kvRow("Postal code", ip.postal || "—", ip.postal ? "bad" : ""),
+      kvRow("Latitude / Longitude", (ip.latitude && ip.longitude) ? (ip.latitude + ", " + ip.longitude) : "—", ip.latitude ? "bad" : ""),
+      kvRow("Timezone", ip.timezone || "—"),
+      kvRow("UTC offset", ip.utcOffset || "—"),
+      kvRow("ISP / Organization", ip.org || "—", "plain"),
+      kvRow("ASN", ip.asn || "—"),
+      kvRow("Currency", ip.currency || "—"),
+      kvRow("Calling code", ip.callingCode || "—"),
+      kvRow("Network type", HOSTING_RE.test(String(ip.org||"").toLowerCase()) ? "Hosting / VPN" : "Residential / consumer",
+        HOSTING_RE.test(String(ip.org||"").toLowerCase()) ? "good" : "bad")
+    ].filter(Boolean),
+    note: hasLocation
+      ? "Any website you load can resolve your public IP to this location in milliseconds — no permission required."
+      : "Your public IP is exposed to every site you visit.",
+    noteCls: "critical"
+  }));
+
+  /* ───── 2. WebRTC leaks ───── */
+  const localIPs = wr.localIPs || [];
+  const localIPv6 = wr.localIPv6 || [];
+  const mdns = wr.mDNS || [];
+  const rtcRows = [];
+  if (localIPs.length) localIPs.forEach(x => rtcRows.push(kvRow("Local IPv4", x, "bad")));
+  if (localIPv6.length) localIPv6.forEach(x => rtcRows.push(kvRow("Local IPv6", x, "bad")));
+  if (mdns.length) mdns.forEach(x => rtcRows.push(kvRow("mDNS candidate", x, "warn")));
+  if (!localIPs.length && !localIPv6.length && !mdns.length) rtcRows.push(kvRow("Leaked addresses", "none", "good"));
+  rtcRows.push(kvRow("WebRTC supported", wr.supported ? "yes" : "no", wr.supported ? "warn" : "good"));
+  rtcRows.push(kvRow("mDNS obfuscation", wr.mdnsObfuscated ? "active" : "off", wr.mdnsObfuscated ? "good" : "warn"));
+  rtcRows.push(kvRow("ICE candidates", String(wr.candidates ? wr.candidates.length : 0)));
+  const media = d.advanced && d.advanced.media;
+  if (media){
+    rtcRows.push(kvRow("Microphones", String(media.counts.audioinput || 0)));
+    rtcRows.push(kvRow("Cameras", String(media.counts.videoinput || 0)));
+    rtcRows.push(kvRow("Audio outputs", String(media.counts.audiooutput || 0)));
+  }
+  cards.push(findingCard({
+    name: "WebRTC leaks — local network addresses",
+    status: statusFor(c.webrtc.score, c.webrtc.max),
+    open: (localIPs.length + localIPv6.length) > 0,
+    danger: (localIPs.length + localIPv6.length) > 0,
+    rows: rtcRows,
+    note: (localIPs.length + localIPv6.length)
+      ? "ICE candidates exposed your local network addresses. A VPN alone will not hide these — you also need WebRTC disabled."
+      : "No local network addresses were exposed through ICE.",
+    noteCls: (localIPs.length + localIPv6.length) ? "critical" : "good"
+  }));
+
+  /* ───── 3. Browser fingerprint ───── */
+  const gl = d.webgl || {};
+  const adv = d.advanced || {};
+  const fonts = adv.fonts || [];
+  const canvasInfo = d.canvas || {};
+  const audioH = d.audio;
+  const fpRows = [
+    kvRow("FingerprintJS ID", fp.id ? fp.id : "—"),
+    kvRow("Components read", fp.componentsCount ? String(fp.componentsCount) : "—"),
+    kvRow("Entropy estimate", entropyBits + " bits"),
+    kvRow("Canvas hash", canvasInfo.hash ? trunc(canvasInfo.hash, 24) : "not available"),
+    kvRow("Audio hash", audioH ? trunc(audioH, 24) : "not available"),
+    kvRow("WebGL vendor", gl.vendor || "—"),
+    kvRow("WebGL renderer (raw)", gl.renderer || "—"),
+    kvRow("GPU (unmasked)", gl.unmaskedRenderer || "—", gl.unmaskedRenderer ? "bad" : ""),
+    kvRow("GPU vendor (unmasked)", gl.unmaskedVendor || "—"),
+    kvRow("GL version", gl.version || "—"),
+    kvRow("GLSL version", gl.shadingLang || "—"),
+    kvRow("Max texture size", gl.maxTextureSize ? gl.maxTextureSize + " px" : "—"),
+    kvRow("WebGL extensions", gl.extensionsCount ? gl.extensionsCount + " extensions" : "—"),
+    kvRow("Fonts detected", fonts.length ? fonts.length + " families" : "—", fonts.length > 40 ? "bad" : "")
+  ];
+  const fontChips = fonts.length ? fonts.slice(0, 24).map(f => ({ label: f })) : null;
+  cards.push(findingCard({
+    name: "Browser fingerprint — canvas, audio, WebGL, fonts",
+    status: statusFor(c.fingerprint.score, c.fingerprint.max),
+    open: c.fingerprint.score < 18,
+    danger: c.fingerprint.score < 12,
+    rows: fpRows,
+    chips: fontChips,
+    note: (gl.unmaskedRenderer)
+      ? "Your exact GPU model is exposed via WebGL. Combined with canvas/audio hashes and font list, this is a stable identifier across sessions — clearing cookies does not reset it."
+      : "Canvas, audio and WebGL hashes together build a stable device signature that survives cleared cookies."
+  }));
+
+  /* ───── 4. Trackers & storage ───── */
+  const storage = adv.storage || {};
+  const perms = adv.permissions || {};
+  const trackerRows = [
+    kvRow("Tracker domains found", String(trackers.length), trackers.length ? "bad" : "good"),
+    kvRow("Resources loaded", String((performance && performance.getEntriesByType) ? (performance.getEntriesByType("resource") || []).length : 0)),
+    kvRow("Cookies enabled", navigator.cookieEnabled ? "yes" : "no", navigator.cookieEnabled ? "warn" : "good"),
+    kvRow("Do Not Track", navigator.doNotTrack === "1" ? "enabled" : (navigator.doNotTrack || "not set")),
+    kvRow("Global Privacy Control", (navigator.globalPrivacyControl ? "enabled" : "not set")),
+    kvRow("Local Storage keys", (function(){ try{ return localStorage.length ? localStorage.length + " keys" : "empty"; }catch(e){ return "unavailable"; } })()),
+    kvRow("Session Storage keys", (function(){ try{ return sessionStorage.length ? sessionStorage.length + " keys" : "empty"; }catch(e){ return "unavailable"; } })())
+  ];
+  if (storage.estimate && storage.estimate.quota){
+    trackerRows.push(kvRow("Storage used", b2mb(storage.estimate.usage) + " / " + b2gb(storage.estimate.quota)));
+  }
+  if (storage.databases){
+    trackerRows.push(kvRow("IndexedDB databases", String(storage.databases.length)));
+  }
+  if (storage.caches){
+    trackerRows.push(kvRow("Cache API entries", String(storage.caches.length)));
+  }
+  if (storage.serviceWorkers){
+    trackerRows.push(kvRow("Service workers", String(storage.serviceWorkers.length)));
+  }
+  const granted = Object.keys(perms).filter(k => perms[k] === "granted");
+  if (granted.length){
+    trackerRows.push(kvRow("Permissions granted", granted.join(", "), "warn"));
+  }
+  cards.push(findingCard({
+    name: "Trackers, storage & permissions",
+    status: statusFor(c.trackers.score, c.trackers.max),
+    open: trackers.length > 0,
+    danger: trackers.length > 0,
+    rows: trackerRows,
+    chips: trackers.length ? trackers.map(t => ({ label: t.name, cls: "bad" })) : null,
+    note: trackers.length
+      ? "These tracker domains loaded on this page. On any real site, they correlate you with the same identity across every other site that uses them."
+      : "No common tracker domains appeared in the resources loaded by this page.",
+    noteCls: trackers.length ? "critical" : "good"
+  }));
+
+  /* ───── 5. System & hardware ───── */
+  const sys = d.system || {};
+  const battery = adv.battery;
+  const conn = adv.connection;
+  const intl = adv.intl || {};
+  const sysRows = [
+    kvRow("User agent", sys.ua || "—"),
+    kvRow("Platform", sys.platform || "—", "plain"),
+    kvRow("Languages", (sys.languages && sys.languages.length) ? sys.languages.join(", ") : "—"),
+    kvRow("Timezone", sys.timezone || "—"),
+    kvRow("Timezone (Intl)", intl.timeZone || "—"),
+    kvRow("Locale", intl.locale || "—"),
+    kvRow("Calendar", intl.calendar || "—"),
+    kvRow("Numbering system", intl.numberingSystem || "—"),
+    kvRow("Currency (default)", intl.currency || "—"),
+    kvRow("Screen", sys.screen || "—"),
+    kvRow("Available area", sys.availScreen || "—"),
+    kvRow("Pixel ratio", sys.pixelRatio ? sys.pixelRatio + "×" : "—"),
+    kvRow("Color depth", sys.colorDepth ? sys.colorDepth + "-bit" : "—"),
+    kvRow("CPU cores", sys.cores ? String(sys.cores) : "not exposed"),
+    kvRow("Device memory", sys.memory ? sys.memory + " GB" : "not exposed"),
+    kvRow("Touch points", String(sys.maxTouchPoints || 0))
+  ];
+  if (battery) sysRows.push(kvRow("Battery", battery.level + "%" + (battery.charging ? " (charging)" : ""), "warn"));
+  if (conn){
+    const parts = [];
+    if (conn.effectiveType) parts.push(conn.effectiveType.toUpperCase());
+    if (conn.downlink !== null) parts.push(conn.downlink + " Mbps");
+    if (conn.rtt !== null) parts.push(conn.rtt + " ms RTT");
+    if (conn.saveData) parts.push("save-data");
+    if (parts.length) sysRows.push(kvRow("Network class", parts.join(" · "), "warn"));
+  }
+  const ch = adv.clientHints;
+  if (ch && ch.high){
+    if (ch.high.architecture) sysRows.push(kvRow("CPU architecture", ch.high.architecture + (ch.high.bitness ? " " + ch.high.bitness + "-bit" : ""), "bad"));
+    if (ch.high.model) sysRows.push(kvRow("Device model", ch.high.model, "bad"));
+    if (ch.high.platformVersion) sysRows.push(kvRow("Platform version", ch.high.platformVersion, "bad"));
+  }
+  if (adv.audioPipeline){
+    const ap = adv.audioPipeline;
+    sysRows.push(kvRow("Audio sample rate", ap.sampleRate ? ap.sampleRate + " Hz" : "—"));
+    if (ap.baseLatency) sysRows.push(kvRow("Audio base latency", (ap.baseLatency * 1000).toFixed(2) + " ms"));
+  }
+  cards.push(findingCard({
+    name: "System, hardware & locale",
+    status: statusFor(c.system.score, c.system.max),
+    open: c.system.score < 14,
+    rows: sysRows,
+    note: "Individually these look harmless. Together — screen + cores + memory + timezone + locale + battery — they pin you to a very small population."
+  }));
+
+  /* ───── 6. Media, codecs, voices ───── */
+  const codecs = adv.codecs || { video: [], audio: [] };
+  const voices = adv.voices || [];
+  const audioPipe = adv.audioPipeline || {};
+  const codecRows = [];
+  if (codecs.video.length) codecs.video.forEach(x => codecRows.push(kvRow("Video — " + x.label, x.support, "plain")));
+  if (codecs.audio.length) codecRows.push(...codecs.audio.map(x => kvRow("Audio — " + x.label, x.support, "plain")));
+  codecRows.push(kvRow("Speech voices installed", String(voices.length), voices.length ? "warn" : ""));
+  if (voices.length) codecRows.push(kvRow("Sample voices", voices.slice(0, 4).map(v => v.name).join(", ")));
+  cards.push(findingCard({
+    name: "Media, codecs & speech",
+    status: "good",
+    rows: codecRows,
+    note: "Installed codecs and speech-synthesis voices fingerprint the OS distribution and can narrow your device model."
+  }));
+
+  /* ───── 7. Browser surface & features ───── */
+  const bs = adv.browserSurface || { plugins: [], mimeTypes: [] };
+  const feat = adv.features || { checks: {}, mediaQueries: {} };
+  const pluginRows = [
+    kvRow("Plugins", String(bs.plugins.length)),
+    kvRow("MIME types", String(bs.mimeTypes.length))
+  ];
+  if (bs.plugins.length){
+    pluginRows.push(...bs.plugins.slice(0, 8).map(p => kvRow("Plugin", p.name, "plain")));
+  }
+  const activeChecks = Object.keys(feat.checks).filter(k => feat.checks[k]);
+  pluginRows.push(kvRow("Supported APIs", String(activeChecks.length)));
+  pluginRows.push(kvRow("Hardened signals", (function(){
+    const signals = [];
+    if (!feat.checks.webgpu) signals.push("no WebGPU");
+    if (!feat.checks.bluetooth) signals.push("no Bluetooth");
+    if (!feat.checks.usb) signals.push("no USB");
+    if (!feat.checks.serial) signals.push("no Serial");
+    return signals.length ? signals.join(", ") : "none";
+  })(), "good"));
+  cards.push(findingCard({
+    name: "Browser surface & feature support",
+    status: "good",
+    rows: pluginRows,
+    note: "The exact set of plugins, MIME types, and Web APIs a browser advertises is itself a fingerprint — hardened browsers deliberately advertise less."
+  }));
+
+  /* ───── 8. DNS ───── */
+  const dns = d.dns || {};
+  const dnsRows = Object.keys(dns).map(name => {
+    const item = dns[name];
+    if (item.error) return kvRow(name, "error — " + item.error, "bad");
+    if (!item.ips || !item.ips.length) return kvRow(name, "no A records", "warn");
+    return kvRow(name, item.ips.join(", "));
+  }).join("");
+  cards.push(findingCard({
+    name: "DNS resolution (DoH)",
+    status: statusFor(c.dns.score, c.dns.max),
+    rows: [dnsRows],
+    note: "Three independent DoH resolvers were queried. A mismatch between them indicates a hijacked or intercepted resolver on your network."
+  }));
+
+  /* ───── 9. Privacy-tool detection ───── */
+  const signals = detectPrivacyTools(d.webgl, d.advanced);
+  if (signals.length){
+    cards.push(findingCard({
+      name: "Tampering & tool detection",
+      status: "warn",
+      rows: signals.map((s, i) => kvRow("Signal " + (i+1), s, "plain")),
+      note: "These indicate a modified, VM-hosted, or automation-driven browser — which is itself a signal."
+    }));
+  }
+
+  $("findings").innerHTML = cards.filter(Boolean).join("");
+
+  /* Raw JSON */
+  try{
+    $("rawJSON").textContent = JSON.stringify(result, null, 2);
+  }catch(e){ $("rawJSON").textContent = "{}"; }
+}
+
+function showRunningState(){
+  $("scanStage").style.display = "flex";
+  $("scanResults").hidden = true;
+  $("scanStageTitle").textContent = "Harvesting browser signals";
+  setStage(0, "Starting…");
+}
+function showResultsState(){
+  $("scanStage").style.display = "none";
+  $("scanResults").hidden = false;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ORCHESTRATOR
+   ═══════════════════════════════════════════════════════════ */
+async function runFullScan(){
+  if (scanning) return;
+  scanning = true;
+  showRunningState();
+
+  const result = { time: Date.now(), score: 0, categories: null, details: {} };
+
+  try{
+    setStage(5, "Resolving public IP and geolocation…");
+    result.details.ip = await getIpAndGeo();
+
+    setStage(15, "Fingerprinting via FingerprintJS…");
+    result.details.fingerprint = await runFingerprint();
+
+    setStage(24, "Hashing canvas output…");
+    result.details.canvas = await canvasHash();
+
+    setStage(32, "Hashing audio pipeline…");
+    result.details.audio = await audioHash();
+
+    setStage(42, "Extracting WebGL, fonts, codecs, hardware…");
+    result.details.advanced = await collectAdvanced();
+    result.details.webgl = result.details.advanced.webgl;
+
+    setStage(58, "Probing WebRTC for local leaks…");
+    result.details.webrtc = await checkWebrtcCandidates(2200);
+
+    setStage(70, "Scanning loaded resources for trackers…");
+    result.details.trackers = scanTrackers();
+
+    setStage(82, "Querying three DoH resolvers…");
+    result.details.dns = await dohLookup("example.com");
+
+    setStage(92, "Collecting system & locale…");
+    try{
+      result.details.system = {
+        ua: navigator.userAgent || "—",
+        screen: (typeof screen !== "undefined" && screen.width) ? screen.width + "×" + screen.height : "—",
+        availScreen: (typeof screen !== "undefined" && screen.availWidth) ? screen.availWidth + "×" + screen.availHeight : "—",
+        memory: navigator.deviceMemory || null,
+        cores: navigator.hardwareConcurrency || null,
+        timezone: (Intl.DateTimeFormat().resolvedOptions && Intl.DateTimeFormat().resolvedOptions().timeZone) || "—",
+        languages: navigator.languages ? Array.from(navigator.languages) : (navigator.language ? [navigator.language] : []),
+        pixelRatio: window.devicePixelRatio || 1,
+        colorDepth: (typeof screen !== "undefined" && screen.colorDepth) ? screen.colorDepth : null,
+        maxTouchPoints: navigator.maxTouchPoints || 0,
+        platform: navigator.platform || "—"
+      };
+    }catch(e){
+      result.details.system = { ua: "—", screen: "—", availScreen: "—", memory: null, cores: null, timezone: "—", languages: [], pixelRatio: 1, colorDepth: null, maxTouchPoints: 0, platform: "—" };
+    }
+
+    setStage(99, "Scoring…");
+    result.categories = computeCategories(result);
+    result.score = result.categories.total;
+
+    lastResult = result;
+    await new Promise(r => setTimeout(r, 240));
+
+    setStage(100, "Complete");
+    renderResults(result);
+    showResultsState();
+  }catch(err){
+    setStage(0, "Scan failed — " + (err && err.message ? err.message : "unknown error"));
+  }finally{
+    scanning = false;
+  }
+}
+
+function exportJSON(){
+  if (!lastResult) return;
+  try{
+    const blob = new Blob([JSON.stringify(lastResult, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "vibex_exposure_scan_" + Date.now() + ".json";
+    a.rel = "noopener";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }catch(e){}
+}
+
+window.addEventListener("load", () => { initChart(); });
+</script>
+
+<script>
+/* ═══════ PARTICLE FIELD ═══════ */
+(function(){
+  "use strict";
+  var canvas = document.getElementById("particleCanvas");
+  if (!canvas) return;
+  var ctx = canvas.getContext("2d", { alpha: true });
+  if (!ctx) return;
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var dpr = 1, w = 0, h = 0;
+  var dots = [];
+  var px = -9999, py = -9999;
+  var rafId = null, lastFrame = 0;
+  var dotColor = "rgba(255,255,255,0.6)";
+  var LINK_DIST = 120, LINK_DIST2 = LINK_DIST * LINK_DIST;
+
+  function readColors(){
+    var theme = document.documentElement.getAttribute("data-theme") || "dark";
+    dotColor = (theme === "light") ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.6)";
+  }
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = window.innerWidth; h = window.innerHeight;
+    canvas.width = Math.floor(w * dpr); canvas.height = Math.floor(h * dpr);
+    canvas.style.width = w + "px"; canvas.style.height = h + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var count = Math.min(66, Math.max(24, Math.round((w * h) / 33000)));
+    dots = [];
+    for (var i = 0; i < count; i++){
+      var angle = Math.random() * Math.PI * 2;
+      var speed = (3 + Math.random() * 5) * (reduceMotion ? 0.55 : 1);
+      dots.push({
+        x: Math.random() * w, y: Math.random() * h,
+        vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed,
+        targetVx: Math.cos(angle)*speed, targetVy: Math.sin(angle)*speed,
+        nextTurn: performance.now() + 3500 + Math.random()*5500,
+        r: Math.random()*1.0 + 0.5
+      });
+    }
+  }
+  function paintStatic(){
+    ctx.clearRect(0,0,w,h); ctx.fillStyle = dotColor;
+    for (var i=0;i<dots.length;i++){ var d=dots[i]; ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,6.2832); ctx.fill(); }
+  }
+  function frame(now){
+    ctx.clearRect(0,0,w,h);
+    var dt = lastFrame ? Math.min(50, now - lastFrame) : 16.67;
+    lastFrame = now;
+    for (var i=0;i<dots.length;i++){
+      var d = dots[i];
+      if (now >= d.nextTurn){
+        var turn = Math.random()*Math.PI*2;
+        var ts = (3 + Math.random()*5) * (reduceMotion ? 0.55 : 1);
+        d.targetVx = Math.cos(turn)*ts; d.targetVy = Math.sin(turn)*ts;
+        d.nextTurn = now + 1800 + Math.random()*4200;
+      }
+      d.vx += (d.targetVx - d.vx) * 0.018; d.vy += (d.targetVy - d.vy) * 0.018;
+      d.x += d.vx * (dt/1000); d.y += d.vy * (dt/1000);
+      if (d.x < -10) d.x = w+10; else if (d.x > w+10) d.x = -10;
+      if (d.y < -10) d.y = h+10; else if (d.y > h+10) d.y = -10;
+      var dx = d.x - px, dy = d.y - py; var dist2 = dx*dx + dy*dy;
+      if (dist2 < 12100 && dist2 > 0.01){ var f = 0.4/Math.sqrt(dist2); d.x += dx*f*0.035; d.y += dy*f*0.035; }
+    }
+    ctx.lineWidth = 1;
+    for (var a=0;a<dots.length;a++) for (var b=a+1;b<dots.length;b++){
+      var dx2 = dots[a].x - dots[b].x, dy2 = dots[a].y - dots[b].y;
+      var dd2 = dx2*dx2 + dy2*dy2;
+      if (dd2 < LINK_DIST2){
+        var alpha = (1 - dd2/LINK_DIST2)*0.06;
+        ctx.strokeStyle = (document.documentElement.getAttribute("data-theme") === "light")
+          ? "rgba(0,0,0," + (alpha*0.8).toFixed(3) + ")"
+          : "rgba(255,255,255," + alpha.toFixed(3) + ")";
+        ctx.beginPath(); ctx.moveTo(dots[a].x,dots[a].y); ctx.lineTo(dots[b].x,dots[b].y); ctx.stroke();
+      }
+    }
+    ctx.fillStyle = dotColor;
+    for (var k=0;k<dots.length;k++){ var p=dots[k]; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.2832); ctx.fill(); }
+    rafId = requestAnimationFrame(frame);
+  }
+  function start(){ if (rafId === null){ lastFrame = 0; rafId = requestAnimationFrame(frame); } }
+  function stop(){ if (rafId !== null){ cancelAnimationFrame(rafId); rafId = null; } }
+  var rt;
+  window.addEventListener("resize", function(){ clearTimeout(rt); rt = setTimeout(function(){ resize(); paintStatic(); }, 150); }, { passive: true });
+  window.addEventListener("pointermove", function(e){ px = e.clientX; py = e.clientY; }, { passive: true });
+  window.addEventListener("pointerleave", function(){ px = py = -9999; }, { passive: true });
+  document.addEventListener("visibilitychange", function(){ if (document.hidden) stop(); else start(); });
+  window.addEventListener("themechange", function(){ readColors(); });
+  readColors(); resize(); start();
+})();
+</script>
+</body>
 </html>
